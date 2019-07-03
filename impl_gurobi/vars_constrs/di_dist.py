@@ -332,7 +332,7 @@ def ddi_dist_without_singletons(model, rs, cfg):
     #                                      connect_vars=bs)
     #
     # add_uncertain_connectivity_constraints(model=model,
-    #                                        edge_set=cfg.allowable_median_edges,
+    #                                        edge_set=cfg.allowable_ancestral_edges,
     #                                        connect_vars=bs,
     #                                        edge_vars=rs,
     #                                        biggest_const=cfg.biggest_const)

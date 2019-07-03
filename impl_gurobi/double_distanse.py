@@ -79,19 +79,28 @@ def create_ilp_formulation_for_ddp(config):
                                                            number_of_R_telomers=len(config.ind_cbg_R_telomers))
 
         return answer
-    except gurobipy.GurobiError:
-        print("Error raized")
+    except gurobipy.GurobiError as e:
+        logger.error(
+            "Some error has been raised. Please, report to github bug tracker. \n Text exception: {0}".format(e))
+        return None
 
 
 def get_param_of_solution_for_double_distance(model, multiplicity, number_of_genes, number_of_R_telomers):
-    obj_val = int(model.objVal)
-    dist = multiplicity * number_of_genes + number_of_R_telomers - obj_val  # 2|S(R)| + |T(R)| - [objective function]
-
-    if gurobipy.GRB.TIME_LIMIT == model.status:
-        exit_status = 0
-    elif gurobipy.GRB.OPTIMAL == model.status:
-        exit_status = 1
+    if gurobipy.GRB.INFEASIBLE == model.status:
+        logger.info("The model is infeasible. Please, report to github bug tracker.")
+        return ILPAnswer(ov=0, score=0, es=3)
+    elif model.SolCount == 0:
+        logger.info("0 solutions have been found. Please, increase time limit.")
+        return ILPAnswer(ov=0, score=0, es=4)
     else:
-        exit_status = 2
+        obj_val = int(model.objVal)
+        dist = multiplicity * number_of_genes + number_of_R_telomers - obj_val  # 2|S(R)| + |T(R)| - [objective function]
 
-    return ILPAnswer(ov=obj_val, score=dist, es=exit_status)
+        if gurobipy.GRB.TIME_LIMIT == model.status:
+            exit_status = 0
+        elif gurobipy.GRB.OPTIMAL == model.status:
+            exit_status = 1
+        else:
+            exit_status = 2
+
+        return ILPAnswer(ov=obj_val, score=dist, es=exit_status)
