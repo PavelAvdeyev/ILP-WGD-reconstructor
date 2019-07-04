@@ -6,10 +6,10 @@ import networkx as nx
 import operator
 import os
 
-from common import epilog, version, enable_logging
-from genome import parse_genome_in_grimm_file
+from utils.common import epilog, version, enable_logging
+from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.restricted_versions import create_ilp_formulation_for_restricted_median
-from impl_gurobi.utils import create_complete_genes_multiset, create_observed_edges_from_gene_multiset, \
+from impl_gurobi.common import create_complete_genes_multiset, create_observed_edges_from_gene_multiset, \
     create_vertex_set_from_gene_multiset, get_immediate_subdirectories
 
 logger = logging.getLogger()
@@ -176,7 +176,7 @@ def main():
                         help="Three files in GRIMM format")
 
     parser.add_argument("-o", "--out-dir", dest="out_dir",
-                        default=None, required=False,
+                        default=None, required=True,
                         metavar="PATH", help="Output directory")
 
     parser.add_argument("-tl", "--time_limit", dest="time_limit",
@@ -187,9 +187,6 @@ def main():
     parser.add_argument("-v", "--version", action="version", version=version())
 
     args = parser.parse_args()
-
-    if not args.out_dir:
-        parser.error("Output directory must be specified for running script in not paper test mode.")
 
     if not os.path.isdir(args.out_dir):
         os.mkdir(args.out_dir)

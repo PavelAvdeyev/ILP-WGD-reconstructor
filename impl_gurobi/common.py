@@ -2,9 +2,8 @@ import os
 
 import itertools
 
-from genome import Genome, get_extremity_by_gene
+from utils.genome import Genome, get_extremity_by_gene
 import bg.breakpoint_graph
-import networkx as nx
 
 
 def get_immediate_subdirectories(a_dir):

@@ -1,7 +1,7 @@
 import logging
 import gurobipy
 
-from impl_gurobi.utils import ILPAnswer, get_genome_graph_from_vars
+from impl_gurobi.common import ILPAnswer, get_genome_graph_from_vars
 from impl_gurobi.vars_constrs.di_dist import di_dist_with_singletons, di_dist_without_singletons, \
     ddi_dist_without_singletons
 # , ddi_dist_with_singletons

@@ -4,7 +4,7 @@ import gurobipy
 from impl_gurobi.vars_constrs.count_componets import create_connectivity_variables, \
     add_certain_connectivity_constraints, add_uncertain_connectivity_constraints, create_vars_count_odd_paths
 from impl_gurobi.vars_constrs.ord_matching import define_matching_vars, define_guided_matching_using_graph
-from impl_gurobi.utils import ILPAnswer, create_general_allowable_set, create_general_conditional_set
+from impl_gurobi.common import ILPAnswer, create_general_allowable_set, create_general_conditional_set
 
 logger = logging.getLogger()
 

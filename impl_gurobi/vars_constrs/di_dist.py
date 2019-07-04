@@ -8,7 +8,7 @@ from impl_gurobi.vars_constrs.ord_matching import define_matching_vars, define_g
 from impl_gurobi.vars_constrs.ord_singleton import create_vars_vertices_in_singleton, \
     add_constr_representative_neq_zero, \
     add_constr_vertex_in_singleton_has_edge
-from impl_gurobi.utils import create_general_allowable_set, create_general_conditional_set
+from impl_gurobi.common import create_general_allowable_set, create_general_conditional_set
 
 logger = logging.getLogger()
 

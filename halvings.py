@@ -10,9 +10,9 @@ import os
 
 import sys
 
-from genome import parse_genome_in_grimm_file
+from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.halvings import create_ilp_formulation_for_halvings_without_singletons
-from impl_gurobi.utils import create_complete_genes_multiset, remove_singletons_dupl_wrt_gene_set, \
+from impl_gurobi.common import create_complete_genes_multiset, remove_singletons_dupl_wrt_gene_set, \
     create_observed_edges_from_gene_multiset, create_vertex_set_from_gene_multiset, get_immediate_subdirectories, \
     define_equiv_function
 

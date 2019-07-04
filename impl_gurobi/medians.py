@@ -3,7 +3,7 @@ import gurobipy
 
 from impl_gurobi.vars_constrs.di_dist import di_dist_with_singletons, di_dist_without_singletons
 from impl_gurobi.vars_constrs.ord_matching import define_matching_vars
-from impl_gurobi.utils import get_genome_graph_from_vars, ILPAnswer
+from impl_gurobi.common import get_genome_graph_from_vars, ILPAnswer
 
 logger = logging.getLogger()
 
@@ -46,8 +46,10 @@ def create_ilp_formulation_for_medians_with_singletons(cfg):
         logger.info("The number of cycles and paths is " + str(int(model.objVal)))
         answer = get_param_of_solution_for_median_problem(model=model, cfg=cfg, rs=rs, dot_rs=dot_rs)
         return answer
-    except gurobipy.GurobiError:
-        print("Error raized")
+    except gurobipy.GurobiError as e:
+        logger.error(
+            "Some error has been raised. Please, report to github bug tracker. \n Text exception: {0}".format(e))
+        return None
 
 
 def create_ilp_formulation_for_medians_without_singletons(cfg):
@@ -84,30 +86,39 @@ def create_ilp_formulation_for_medians_without_singletons(cfg):
         logger.info("The number of cycles and paths is " + str(int(model.objVal)))
         answer = get_param_of_solution_for_median_problem(model=model, cfg=cfg, rs=rs, dot_rs=dot_rs)
         return answer
-    except gurobipy.GurobiError:
-        print("Error raized")
+    except gurobipy.GurobiError as e:
+        logger.error(
+            "Some error has been raised. Please, report to github bug tracker. \n Text exception: {0}".format(e))
+        return None
 
 
 def get_param_of_solution_for_median_problem(model, cfg, rs, dot_rs):
-    obj_val = int(model.objVal)
-
-    number_of_vertices = len(cfg.ind_ancestral_set.union(cfg.ind_cbg_p_i_vertex_sets[0])) + \
-                         len(cfg.ind_ancestral_set.union(cfg.ind_cbg_p_i_vertex_sets[1])) + \
-                         len(cfg.ind_ancestral_set.union(cfg.ind_cbg_p_i_vertex_sets[2]))
-
-    dist = number_of_vertices // 2 - obj_val
-
-    if gurobipy.GRB.TIME_LIMIT == model.status:
-        exit_status = 0
-    elif gurobipy.GRB.OPTIMAL == model.status:
-        exit_status = 1
+    if gurobipy.GRB.INFEASIBLE == model.status:
+        logger.info("The model is infeasible. Please, report to github bug tracker.")
+        return ILPAnswer(ov=0, score=0, es=3, genome=dict())
+    elif model.SolCount == 0:
+        logger.info("0 solutions have been found. Please, increase time limit.")
+        return ILPAnswer(ov=0, score=0, es=4, genome=dict())
     else:
-        exit_status = 2
+        obj_val = int(model.objVal)
 
-    block_order = get_genome_graph_from_vars(rs=rs, r_dot=dot_rs,
-                                             gene_set=cfg.ancestral_gene_set,
-                                             telomer_set=cfg.allowable_ancestral_telomers,
-                                             edge_set=cfg.allowable_ancestral_edges,
-                                             ind2vertex=cfg.cbg_ind2vertex)
+        number_of_vertices = len(cfg.ind_ancestral_set.union(cfg.ind_cbg_p_i_vertex_sets[0])) + \
+                             len(cfg.ind_ancestral_set.union(cfg.ind_cbg_p_i_vertex_sets[1])) + \
+                             len(cfg.ind_ancestral_set.union(cfg.ind_cbg_p_i_vertex_sets[2]))
 
-    return ILPAnswer(ov=obj_val, score=dist, es=exit_status, genome=block_order)
+        dist = number_of_vertices // 2 - obj_val
+
+        if gurobipy.GRB.TIME_LIMIT == model.status:
+            exit_status = 0
+        elif gurobipy.GRB.OPTIMAL == model.status:
+            exit_status = 1
+        else:
+            exit_status = 2
+
+        block_order = get_genome_graph_from_vars(rs=rs, r_dot=dot_rs,
+                                                 gene_set=cfg.ancestral_gene_set,
+                                                 telomer_set=cfg.allowable_ancestral_telomers,
+                                                 edge_set=cfg.allowable_ancestral_edges,
+                                                 ind2vertex=cfg.cbg_ind2vertex)
+
+        return ILPAnswer(ov=obj_val, score=dist, es=exit_status, genome=block_order)

@@ -4,16 +4,11 @@ from functools import reduce
 import networkx as nx
 import operator
 
-import os
-
-import sys
-sys.path.append('../')
-
-from genome import parse_genome_in_grimm_file
+from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.medians import create_ilp_formulation_for_medians_without_singletons, \
     create_ilp_formulation_for_medians_with_singletons
-from impl_gurobi.utils import create_complete_genes_multiset, remove_singletons_dupl_wrt_gene_set, \
-    create_observed_edges_from_gene_multiset, create_vertex_set_from_gene_multiset, get_immediate_subdirectories
+from impl_gurobi.common import create_complete_genes_multiset, remove_singletons_dupl_wrt_gene_set, \
+    create_observed_edges_from_gene_multiset, create_vertex_set_from_gene_multiset
 
 logger = logging.getLogger()
 
@@ -111,111 +106,45 @@ def remove_known_singletons(genomes):
     return genomes
 
 
-def medians_with_singletons(genome_files, out_result_file, out_median_file, problem):
+def medians_with_singletons(genome_files, out_result_file, out_median_file, problem, gurobi_log_file, time_limit):
+    logging.info('Start to solve {0} (including singletons) with time limit equals {1}'.format(problem, time_limit))
+
     genomes = [parse_genome_in_grimm_file(genome_file) for genome_file in genome_files]
     genomes = remove_known_singletons(genomes)
 
+    logging.info('Create ILP config')
     if problem == "CGMP":
-        cfg = ConservedMedian(genomes=genomes, name="CGMP", log_file="gurobi_cgmp.log", tl=7200)
+        cfg = ConservedMedian(genomes=genomes, name="CGMP", log_file=gurobi_log_file, tl=time_limit)
     else:
-        cfg = ClassicMedian(genomes=genomes, name="GMP", log_file="gurobi_gmp.log", tl=7200)
+        cfg = ClassicMedian(genomes=genomes, name="GMP", log_file=gurobi_log_file, tl=time_limit)
 
     answer = create_ilp_formulation_for_medians_with_singletons(cfg)
 
-    answer.write_stats_file(out_result_file)
-    answer.write_genome_file(out_median_file)
-
-
-def medians_without_singletons(genome_files, out_result_file, out_median_file, problem):
-    genomes = [parse_genome_in_grimm_file(genome_file) for genome_file in genome_files]
-    genomes = remove_known_singletons(genomes)
-
-    if problem == "CGMP":
-        cfg = ConservedMedian(genomes=genomes, name="CGMP", log_file="gurobi_cgmp.log", tl=7200)
+    if answer is not None:
+        logging.info('Save results.')
+        answer.write_stats_file(out_result_file)
+        answer.write_genome_file(out_median_file)
     else:
-        cfg = ClassicMedian(genomes=genomes, name="GMP", log_file="gurobi_gmp.log", tl=7200)
+        logging.info('There are no answers. Please, check log file.')
+
+
+def medians_without_singletons(genome_files, out_result_file, out_median_file, problem, gurobi_log_file, time_limit):
+    logging.info('Start to solve {0} (excluding singletons) with time limit equals {1}'.format(problem, time_limit))
+    genomes = [parse_genome_in_grimm_file(genome_file) for genome_file in genome_files]
+
+    logging.info('Create ILP config')
+    if problem == "CGMP":
+        cfg = ConservedMedian(genomes=genomes, name="CGMP", log_file=gurobi_log_file, tl=time_limit)
+    else:
+        cfg = ClassicMedian(genomes=genomes, name="GMP", log_file=gurobi_log_file, tl=time_limit)
 
     answer = create_ilp_formulation_for_medians_without_singletons(cfg)
 
-    answer.write_stats_file(out_result_file)
-    answer.write_genome_file(out_median_file)
+    if answer is not None:
+        logging.info('Save results.')
+        answer.write_stats_file(out_result_file)
+        answer.write_genome_file(out_median_file)
+    else:
+        logging.info('There are no answers. Please, check log file.')
 
 
-def dojob(name_directory):
-    logging.info('Let us do the ILP')
-
-    for path, name in get_immediate_subdirectories(name_directory):
-        for subpath, subname in get_immediate_subdirectories(path):
-            if os.path.isfile(subpath):
-                continue
-
-            logging.info("Working with directory {0}".format(subpath))
-            ilppath = os.path.join(subpath, "heur_ilp")
-
-            genome1 = os.path.join(ilppath, "S1.gen")
-            genome2 = os.path.join(ilppath, "S2.gen")
-            genome3 = os.path.join(ilppath, "S4.gen")
-
-            result_out_file = os.path.join(ilppath, "result.txt")
-            genome_out_file = os.path.join(ilppath, "median.gen")
-
-            medians_without_singletons(genome_files=[genome1, genome2, genome3],
-                                       out_result_file=result_out_file,
-                                       out_median_file=genome_out_file,
-                                       problem="CGMP")
-
-
-if __name__ == "__main__":
-    # if len(sys.argv) < 2:
-    #     sys.stderr.write("USAGE: double_distance.py <destination>\n")
-    #     sys.exit(1)
-    #
-    # if os.path.isfile(sys.argv[1]):
-    #     sys.stderr.write("<destination> - is directory with specific hierarchy\n")
-    #     sys.exit(1)
-
-    console_formatter = logging.Formatter("[%(asctime)s] %(levelname)s: "
-                                          "%(message)s", "%H:%M:%S")
-    console_log = logging.StreamHandler()
-    console_log.setFormatter(console_formatter)
-    console_log.setLevel(logging.INFO)
-
-    log_formatter = logging.Formatter("[%(asctime)s] %(name)s: %(levelname)s: "
-                                      "%(message)s", "%H:%M:%S")
-
-    file_log = logging.FileHandler("txt_heur_median.log", mode="w")
-    file_log.setFormatter(log_formatter)
-
-    logger.setLevel(logging.INFO)
-    logger.addHandler(console_log)
-    # logger.addHandler(file_log)
-
-    # dir_path = os.path.abspath(sys.argv[1])
-    # dojob(dir_path)
-
-    # genome1 = """>g1
-    #      1 2 -5 -4 -3 @"""
-    # genome2 = """>g2
-    #      1 -4 -3 -2 5 @"""
-    # genome3 = """>g3
-    #      -3 -2 -1 4 5 @"""
-
-    # '''
-    # genome1 = """>g1
-    #  1 2 -3 $"""
-    # genome2 = """>g2
-    #  1 -2 3 $"""
-    # genome3 = """>g3
-    #  -1 2 3 $"""
-    # '''
-    #
-    # '''
-    # genome1 = """>g1
-    # 2 -3 @"""
-    # genome2 = """>g2
-    # 1 3 @"""
-    # genome3 = """>g3
-    # -1 2 @"""
-    # '''
-
-    medians_without_singletons(["S1.gen", "S2.gen", "S4.gen"], "result.txt", "median.txt", "CGMP")

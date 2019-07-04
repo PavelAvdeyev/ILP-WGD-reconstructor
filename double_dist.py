@@ -6,10 +6,10 @@ from functools import reduce
 
 import os
 
-from common import epilog, enable_logging, version
-from genome import parse_genome_in_grimm_file
+from utils.common import epilog, enable_logging, version
+from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.double_distanse import create_ilp_formulation_for_ddp
-from impl_gurobi.utils import remove_singletons_in_ord_wrt_two_dupl, remove_singletons_dupl_wrt_gene_set, \
+from impl_gurobi.common import remove_singletons_in_ord_wrt_two_dupl, remove_singletons_dupl_wrt_gene_set, \
     create_complete_genes_multiset, define_equiv_function, create_vertex_set_from_gene_multiset, \
     get_immediate_subdirectories
 
@@ -150,7 +150,7 @@ def main():
                         default=None, metavar="PATH", help="2-duplicated genome in GRIMM format")
 
     parser.add_argument("-o", "--out-dir", dest="out_dir",
-                        default=None, required=False,
+                        default=None, required=True,
                         metavar="PATH", help="Output directory")
 
     parser.add_argument("-tl", "--time_limit", dest="time_limit",
@@ -161,9 +161,6 @@ def main():
     parser.add_argument("-v", "--version", action="version", version=version())
 
     args = parser.parse_args()
-
-    if not args.out_dir:
-        parser.error("Output directory must be specified for running script in not paper test mode.")
 
     if not os.path.isdir(args.out_dir):
         os.mkdir(args.out_dir)
