@@ -16,19 +16,16 @@ the advantages of homology- and rearrangements-based methods. The full list of I
 - Restricted Guided Genome Halving Problem (RGGHP)
 - Conserved Guided Genome Halving Problem (CGGHP) 
 
-### Dependencies
+## Dependencies
 **ILP-WGD-Reconstructor** requires third-party tool installations:
 
 - The [Gurobi Optimizer software](https://www.gurobi.com).<br />The instruction how to install the Gurobi Optimizer can be found [here](https://www.gurobi.com/documentation/quickstart.html).
 The Gurobi Optimizer has a [free academic license](https://www.gurobi.com/academia/academic-program-and-licenses/). 
-   
 - The [Gurobi Python Interface](https://www.gurobi.com/documentation/8.1/quickstart_mac/the_gurobi_python_interfac.html) 
-
 - [Networkx Python library](http://networkx.github.io/)
-
 - [Breakpoint Graph library](https://bg.readthedocs.io/)
 
-### Usage
+## Usage
 Consult to usage guide for each ILP formulation:
 - [Genome Median Problem](docs/gmp.md)
 - [Intermediate Genome Median Problem](docs/igmp.md)
@@ -38,19 +35,19 @@ Consult to usage guide for each ILP formulation:
 - [Restricted Guided Genome Halving Problem](docs/rgghp.md)
 - [Conserved Guided Genome Halving Problem](docs/cgghp.md)
 
-### Publications
+## Publications
 P. Avdeyev, N. Alexeev, Y. Rong, and M. A. Alekseyev. "A Unified ILP Framework for Core Ancestral Genome Reconstruction 
 Problems". (submitted)
 
 P. Avdeyev, N. Alexeev, Y. Rong, and M. A. Alekseyev. "A Unified ILP Framework for Genome Median, Halving, and 
 Aliquoting Problems under DCJ". Lecture Notes in Computer Science, 2017. 
 
-### Authors
+## Authors
 - Pavel Avdeyev 
 - Nikita Alexeev
 - Yongwu Rong 
 - Max A. Alekseyev
 
-### Contacts
+## Contacts
 Please report any issues directly to the github issue tracker. 
 Also, you can send your feedback to avdeyev@gwu.edu

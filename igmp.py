@@ -8,7 +8,7 @@ import os
 
 from utils.common import epilog, version, enable_logging
 from utils.genome import parse_genome_in_grimm_file
-from impl_gurobi.restricted_versions import create_ilp_formulation_for_restricted_median
+from impl_gurobi.restricted_median import create_ilp_formulation_for_restricted_median
 from impl_gurobi.common import create_complete_genes_multiset, create_observed_edges_from_gene_multiset, \
     create_vertex_set_from_gene_multiset, get_immediate_subdirectories
 

@@ -139,7 +139,7 @@ def solve_restricted_halving_problem(ordinary_genome_file, all_dupl_genome_file,
                                 tl=time_limit,
                                 mult=2)
 
-    answer = create_ilp_formulation_for_restricted_halving(cfg)
+    answer = create_ilp_formulation_for_restricted_phalving(cfg)
 
     if answer is not None:
         logging.info('Save results.')

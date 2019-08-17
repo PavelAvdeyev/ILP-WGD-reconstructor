@@ -7,8 +7,7 @@ def version():
 
 
 def epilog():
-    return "Gurobi solver is required! Input genomes must be in GRIMM format. " \
-           "The option --paper_test should be used only for reproducibility of the paper results."
+    return "Gurobi solver is required! Input genomes must be in GRIMM format."
 
 
 def enable_logging(log_file, overwrite):
