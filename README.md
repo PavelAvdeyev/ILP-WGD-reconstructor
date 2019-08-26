@@ -19,14 +19,14 @@ the advantages of homology- and rearrangements-based methods. The full list of I
 ## Dependencies
 **ILP-WGD-Reconstructor** requires third-party tool installations:
 
-- The [Gurobi Optimizer software](https://www.gurobi.com).<br />The instruction how to install the Gurobi Optimizer can be found [here](https://www.gurobi.com/documentation/quickstart.html).
+- The [Gurobi Optimizer software](https://www.gurobi.com).<br />Instructions on how to install the Gurobi Optimizer can be found [here](https://www.gurobi.com/documentation/quickstart.html).
 The Gurobi Optimizer has a [free academic license](https://www.gurobi.com/academia/academic-program-and-licenses/). 
 - The [Gurobi Python Interface](https://www.gurobi.com/documentation/8.1/quickstart_mac/the_gurobi_python_interfac.html) 
 - [Networkx Python library](http://networkx.github.io/)
 - [Breakpoint Graph library](https://bg.readthedocs.io/)
 
 ## Usage
-Consult to usage guide for each ILP formulation:
+Refer to usage guide for each ILP formulation:
 - [Genome Median Problem](docs/gmp.md)
 - [Intermediate Genome Median Problem](docs/igmp.md)
 - [Conserved Genome Median Problem](docs/cgmp.md)

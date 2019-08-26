@@ -1,5 +1,5 @@
 # Genome Median Problem
-`gmp.py` creates the ILP formulation for the Genome Median Problem 
+`gmp.py` creates the ILP formulation for the Genome Median Problem
 and runs Gurobi Solver.  
 
 ```
@@ -34,12 +34,12 @@ You can try `gmp.py` on the provided ready-to-use examples:
  (in an ordinary genome, each gene/synteny block is present in a single copy) 
 - Path to output directory
 
-Optionally, time limit may be set for Gurobi Solver (it is 2 hours by default). 
+Optionally, a time limit may be set for Gurobi Solver (it is 2 hours by default).
 
 ### Output
 After running `gmp.py`, the output directory will contain:
 - `median.gen` - file with ancestral (median) genome in GRIMM format 
-- `result.txt` - file with exit status (0 - stopped by reaching TL, 1 - optimal solution, 2 - other), 
-objective value of optimized functional, and gmp-score (the total distance from the given genomes)   
+- `result.txt` - file with exit status (0 - stopped by reaching TL, 1 - optimal solution, 2 - other),
+optimized value of the objective function, and gmp-score (the total distance from the given genomes)   
 - several log files
 

@@ -1,5 +1,5 @@
 # Guided Genome Halving Problem
-`gghp.py` creates the ILP formulation for the Guided Genome Halving Problem 
+`gghp.py` creates the ILP formulation for the Guided Genome Halving Problem
 and runs Gurobi Solver.  
 
 ```
@@ -36,14 +36,13 @@ You can try `gghp.py` on the provided ready-to-use examples:
 - 2-duplicated genome (i.e., each gene/synteny block is present in two copies) **[[in GRIMM format](http://grimm.ucsd.edu/GRIMM/grimm_instr.html)]**
 - Path to output directory
 
-Optionally, time limit may be set for Gurobi Solver (it is 2 hours by default). 
+Optionally, a time limit may be set for Gurobi Solver (it is 2 hours by default).
 
 ### Output
 After running `gghp.py`, the output directory will contain:
 - `pre_dup.gen` - file with ancestral pre-duplicated genome in GRIMM format 
-- `result.txt` - file with exit status (0 - stopped by reaching TL, 1 - optimal solution, 2 - other), 
-objective value of optimized functional, and ggh-score (the total distance between the 
-ordinary genome and pre-duplicated genome and between the 2-duplicated genome and 
-the perfect 2-duplicated genome)   
+- `result.txt` - file with exit status (0 - stopped by reaching TL, 1 - optimal solution, 2 - other),
+optimized value of the objective function, and ggh-score
+(the distance between the ordinary genome and the pre-duplicated genome plus the distance between the 2-duplicated genome and the perfect 2-duplicated genome)   
 - several log files
 

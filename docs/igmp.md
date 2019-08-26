@@ -1,5 +1,5 @@
 # Intermediate Genome Median Problem
-`igmp.py` creates the ILP formulation for the Intermediate Genome Median Problem 
+`igmp.py` creates the ILP formulation for the Intermediate Genome Median Problem
 and runs Gurobi Solver.  
 
 ```
@@ -30,17 +30,17 @@ You can try `igmp.py` on the provided ready-to-use examples:
 ### Input
 `igmp.py` needs as input:
 
-- Three files with ordinary genomes **[[in GRIMM format](http://grimm.ucsd.edu/GRIMM/grimm_instr.html)]**. The third genome
-is considered as outgroup genome. Intermediate genome will be found between the first and second genome. 
- <br />
- (in an ordinary genome, each gene/synteny block is present in a single copy) 
+- Three files with ordinary genomes **[[in GRIMM format](http://grimm.ucsd.edu/GRIMM/grimm_instr.html)]**.
+The third genome is considered as an outgroup genome.
+An intermediate genome will be found between the first and second genome.
+In an ordinary genome, each gene/synteny block is present in a single copy.  
 - Path to output directory
 
-Optionally, time limit may be set for Gurobi Solver (it is 2 hours by default). 
+Optionally, a time limit may be set for Gurobi Solver (it is 2 hours by default).
 
 ### Output
 After running `igmp.py`, the output directory will contain:
 - `median.gen` - file with ancestral (intermediate) genome in GRIMM format 
-- `result.txt` - file with exit status (0 - stopped by reaching TL, 1 - optimal solution, 2 - other), 
-objective value of optimized functional, and gmp-score (the total distance from the given genomes)   
+- `result.txt` - file with exit status (0 - stopped by reaching TL, 1 - optimal solution, 2 - other),
+optimized value of the objective function, and gmp-score (the total distance from the given genomes)   
 - several log files
