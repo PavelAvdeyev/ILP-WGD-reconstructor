@@ -10,7 +10,7 @@ from utils.common import epilog, enable_logging, version
 from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.double_distanse import create_ilp_formulation_for_ddp
 from impl_gurobi.common import remove_singletons_in_ord_wrt_two_dupl, remove_singletons_dupl_wrt_gene_set, \
-    create_complete_genes_multiset, define_equiv_function, create_vertex_set_from_gene_multiset, \
+    complete_genes_multiset, define_equiv_function, vertex_set_from_gene_multiset, \
     get_immediate_subdirectories
 
 logger = logging.getLogger()
@@ -25,30 +25,30 @@ class DoubleDistConf(object):
         self.genes_of_dupl_genome = duplicated_genome.get_gene_multiset()
         self.genes_of_ord_genome = ordinary_genome.get_gene_multiset()
 
-        self.s_all_genes = create_complete_genes_multiset(
+        self.s_all_genes = complete_genes_multiset(
             self.genes_of_ord_genome.keys() | self.genes_of_dupl_genome.keys(), 1)
-        self.ms_all_genes = create_complete_genes_multiset(
+        self.ms_all_genes = complete_genes_multiset(
             self.genes_of_ord_genome.keys() | self.genes_of_dupl_genome.keys(), mult)
 
         # Coding breakpoint graph
-        self.bg_vertex_set = create_vertex_set_from_gene_multiset(self.ms_all_genes)
+        self.bg_vertex_set = vertex_set_from_gene_multiset(self.ms_all_genes)
         self.bg_ind2vertex = [''] + [u for u in self.bg_vertex_set]
         self.bg_vertex2ind = {self.bg_ind2vertex[i]: i for i in range(1, len(self.bg_ind2vertex))}
 
         bg_A_matching, bg_A_telomers = duplicated_genome.convert_to_genome_graph()
         self.ind_bg_A_vertices = {self.bg_vertex2ind[u] for u in
-                                  create_vertex_set_from_gene_multiset(self.genes_of_dupl_genome)}
+                                  vertex_set_from_gene_multiset(self.genes_of_dupl_genome)}
         self.ind_bg_A_edges = {tuple(sorted((self.bg_vertex2ind[u], self.bg_vertex2ind[v]))) for u, v in bg_A_matching}
         self.ind_bg_A_telomers = {self.bg_vertex2ind[u] for u in bg_A_telomers}
 
         # Coding contracted breakpoint graph
-        self.cbg_vertex_set = create_vertex_set_from_gene_multiset(self.s_all_genes)
+        self.cbg_vertex_set = vertex_set_from_gene_multiset(self.s_all_genes)
         self.cbg_ind2vertex = [''] + [u for u in self.cbg_vertex_set]
         self.cbg_vertex2ind = {self.cbg_ind2vertex[i]: i for i in range(1, len(self.cbg_ind2vertex))}
 
         cbg_R_matching, cbg_R_telomers = ordinary_genome.convert_to_genome_graph()
         self.ind_cbg_R_vertices = {self.cbg_vertex2ind[u] for u in
-                                   create_vertex_set_from_gene_multiset(self.genes_of_ord_genome)}
+                                   vertex_set_from_gene_multiset(self.genes_of_ord_genome)}
         self.ind_cbg_R_edges = {tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in
                                 cbg_R_matching}
         self.ind_cbg_R_telomers = {self.cbg_vertex2ind[u] for u in cbg_R_telomers}
@@ -56,10 +56,30 @@ class DoubleDistConf(object):
         self.equiv_map = define_equiv_function(self.ms_all_genes, self.cbg_vertex2ind, self.bg_vertex2ind)
 
         # Coding completion of genomes
-        self.ind_compl_for_A = set(self.bg_vertex2ind.values()) - self.ind_bg_A_vertices
-        self.ind_compl_for_R = set(self.bg_vertex2ind.values()) - reduce(operator.or_, [set(self.equiv_map[v])
-                                                                                        for v in
-                                                                                        self.ind_cbg_R_vertices], set())
+        self.ind_compl_A = set(self.bg_vertex2ind.values()) - self.ind_bg_A_vertices
+        self.ind_compl_R = set(self.bg_vertex2ind.values()) - reduce(operator.or_, [set(self.equiv_map[v])
+                                                                                    for v in
+                                                                                    self.ind_cbg_R_vertices], set())
+
+        # hat_V(X)\V(R)
+        self.ind_cbg_compl_R = set(self.cbg_vertex2ind.values()) - self.ind_cbg_R_vertices
+
+        # J_0(2R)
+        self.ind_bg_2R_telomers = reduce(operator.or_, [set(self.equiv_map[v])
+                                                        for v in
+                                                        self.ind_cbg_R_telomers], set())
+
+        # J_1(A)
+        self.ind_bg_A_nontelomers = self.ind_bg_A_vertices - self.ind_bg_A_telomers
+
+        # J^1
+        self.ind_first_type_telomers = self.ind_bg_2R_telomers - self.ind_bg_A_vertices
+        # J^2
+        self.ind_second_type_telomers = self.ind_compl_A - self.ind_bg_2R_telomers
+        # J^3
+        self.ind_third_type_telomers = self.ind_bg_A_nontelomers & self.ind_bg_2R_telomers
+        # J^4
+        self.ind_forth_type_telomers = self.ind_bg_A_telomers - self.ind_bg_2R_telomers
 
         self.biggest_const = len(self.bg_ind2vertex)
         self.name_model = name
@@ -71,8 +91,9 @@ class DoubleDistConf(object):
 
 
 def solve_double_distance_problem(ord_genome_file, all_dupl_genome_file, out_result_file, gurobi_log_file, mult=2,
-                                  time_limit=7200):
-    logging.info('Start to solve DDP problem with time limit equals {0}'.format(time_limit))
+                                  time_limit=7200, ilp_type='improved'):
+    logging.info(
+        'Start to solve DDP problem with time limit equals {0} and solver type "{1}"'.format(time_limit, ilp_type))
 
     ord_genome = parse_genome_in_grimm_file(ord_genome_file)
     all_dupl_genome = parse_genome_in_grimm_file(all_dupl_genome_file)
@@ -81,18 +102,20 @@ def solve_double_distance_problem(ord_genome_file, all_dupl_genome_file, out_res
     all_dupl_genome = remove_singletons_dupl_wrt_gene_set(all_dupl_genome, set(ord_genome.get_gene_multiset().keys()))
 
     logging.info('Create ILP config')
-    config = DoubleDistConf(ordinary_genome=ord_genome, duplicated_genome=all_dupl_genome, name="DDP",
+    config = DoubleDistConf(ordinary_genome=ord_genome, duplicated_genome=all_dupl_genome, name="DDP_" + ilp_type,
                             log_file=gurobi_log_file, tl=time_limit, mult=mult)
 
-    answer = create_ilp_formulation_for_ddp(config=config)
+    answer = create_ilp_formulation_for_ddp(config=config, ilp_type=ilp_type)
     if answer is not None:
         logging.info('Save results.')
         answer.write_stats_file(out_result_file)
+        return answer.obj_val, answer.score
     else:
         logging.info('There are no answers. Please, check log file.')
+        return None
 
 
-def do_test_job(input_directory, gurobi_log_file):
+def do_test_job(input_directory, gurobi_log_file, ilp_type):
     logging.info('Let\'s do comparison test for the DDP-ILP. Input directory is {0}'.format(input_directory))
 
     for path, name in get_immediate_subdirectories(input_directory):
@@ -107,7 +130,7 @@ def do_test_job(input_directory, gurobi_log_file):
             all_dupl_genome = os.path.join(ilppath, "a.gen")
             out_file = os.path.join(ilppath, "result.txt")
             solve_double_distance_problem(ord_genome_file=ordinary_genome, all_dupl_genome_file=all_dupl_genome,
-                                          out_result_file=out_file, gurobi_log_file=gurobi_log_file)
+                                          out_result_file=out_file, gurobi_log_file=gurobi_log_file, ilp_type=ilp_type)
 
 
 def test_run():
@@ -117,12 +140,17 @@ def test_run():
     parser.add_argument("-pt", "--paper_test", dest="paper_test",
                         default=None, metavar="PATH",
                         help="The directory with data from the paper. Please use only "
-                        "for reproducibility of the paper results")
+                             "for reproducibility of the paper results")
 
     parser.add_argument("-tl", "--time_limit", dest="time_limit",
                         default=7200, required=False,
                         type=int, metavar="NUMBER",
                         help="Time limit for Gurobi solver")
+
+    parser.add_argument("-tp", "--type",
+                        default='improved',
+                        type=str,
+                        help="ILP type: improved or basic")
 
     parser.add_argument("-v", "--version", action="version", version=version())
 
@@ -136,7 +164,7 @@ def test_run():
     args.gurobi_log_file = os.path.join(args.paper_test, "gurobi_double_distance.log")
     enable_logging(args.log_file, overwrite=False)
 
-    do_test_job(args.paper_test, args.gurobi_log_file)
+    do_test_job(args.paper_test, args.gurobi_log_file, args.type)
 
 
 def main():
@@ -157,6 +185,11 @@ def main():
                         default=7200, required=False,
                         type=int, metavar="NUMBER",
                         help="Time limit for Gurobi solver")
+
+    parser.add_argument("-tp", "--type",
+                        default='improved',
+                        type=str,
+                        help="ILP type: improved or basic")
 
     parser.add_argument("-v", "--version", action="version", version=version())
 
@@ -179,7 +212,8 @@ def main():
                                   all_dupl_genome_file=path_to_dupl_genome,
                                   out_result_file=result_out_file,
                                   gurobi_log_file=args.gurobi_log_file,
-                                  time_limit=args.time_limit)
+                                  time_limit=args.time_limit,
+                                  ilp_type=args.type)
 
 
 if __name__ == "__main__":

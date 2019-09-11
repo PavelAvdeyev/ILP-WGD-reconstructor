@@ -3,7 +3,7 @@
 and runs Gurobi Solver.  
 
 ```
-usage: double_dist.py [-h] [-r PATH] [-t PATH] -o PATH [-tl NUMBER] [-v]
+usage: double_dist.py [-h] [-r PATH] [-t PATH] -o PATH [-tl NUMBER] [-tp] [-v]
 
 ILP solver for the Double Distance Problem (DDP)
 
@@ -17,6 +17,8 @@ optional arguments:
                         Output directory
   -tl NUMBER, --time_limit NUMBER
                         Time limit for Gurobi solver
+  -tp {basic|improved}, --type {basic|improved}
+                        ILP solver type
   -v, --version         show program's version number and exit
 
 Gurobi solver is required! Input genomes must be in GRIMM format.

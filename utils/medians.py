@@ -7,8 +7,8 @@ import operator
 from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.medians import create_ilp_formulation_for_medians_without_singletons, \
     create_ilp_formulation_for_medians_with_singletons
-from impl_gurobi.common import create_complete_genes_multiset, remove_singletons_dupl_wrt_gene_set, \
-    create_observed_edges_from_gene_multiset, create_vertex_set_from_gene_multiset
+from impl_gurobi.common import complete_genes_multiset, remove_singletons_dupl_wrt_gene_set, \
+    observed_edges_from_gene_multiset, vertex_set_from_gene_multiset
 
 logger = logging.getLogger()
 
@@ -19,18 +19,18 @@ class MedianConf(object):
             raise Exception("Incorrect number of genomes for median problems")
 
         self.gene_sets = [set(genome.get_gene_multiset().keys()) for genome in genomes]
-        self.s_all_genes = create_complete_genes_multiset(reduce(operator.or_, self.gene_sets, set()), 1)
+        self.s_all_genes = complete_genes_multiset(reduce(operator.or_, self.gene_sets, set()), 1)
 
-        self.cbg_vertex_set = create_vertex_set_from_gene_multiset(self.s_all_genes)
+        self.cbg_vertex_set = vertex_set_from_gene_multiset(self.s_all_genes)
         self.cbg_ind2vertex = [''] + [u for u in self.cbg_vertex_set]
         self.cbg_vertex2ind = {self.cbg_ind2vertex[i]: i for i in range(1, len(self.cbg_ind2vertex))}
 
-        obverse_edges = create_observed_edges_from_gene_multiset(self.s_all_genes)
+        obverse_edges = observed_edges_from_gene_multiset(self.s_all_genes)
         self.ind_cbg_obverse_edges = {tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in obverse_edges}
 
         genome_graphs = [genome.convert_to_genome_graph() for genome in genomes]
         self.ind_cbg_p_i_vertex_sets = [{self.cbg_vertex2ind[u] for u in
-                                         create_vertex_set_from_gene_multiset(create_complete_genes_multiset(gene_set, 1))}
+                                         vertex_set_from_gene_multiset(complete_genes_multiset(gene_set, 1))}
                                         for gene_set in self.gene_sets]
         self.ind_cbg_p_i_edges = [{tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v])))
                                    for u, v in matching} for matching, _ in genome_graphs]

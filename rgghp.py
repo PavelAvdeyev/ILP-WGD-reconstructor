@@ -8,8 +8,8 @@ import operator
 import itertools
 import networkx as nx
 
-from impl_gurobi.common import get_immediate_subdirectories, create_complete_genes_multiset, \
-    create_observed_edges_from_gene_multiset, create_vertex_set_from_gene_multiset, define_equiv_function
+from impl_gurobi.common import get_immediate_subdirectories, complete_genes_multiset, \
+    observed_edges_from_gene_multiset, vertex_set_from_gene_multiset, define_equiv_function
 from impl_gurobi.restricted_halving import create_ilp_formulation_for_restricted_halving
 from utils.common import epilog, enable_logging, version
 from utils.genome import parse_genome_in_grimm_file
@@ -27,21 +27,21 @@ class RestrictedHalvingConf(object):
         self.gene_sets = [set(genome.get_gene_multiset().keys()) for genome in ordinary_genomes]
         self.genes_of_dupl_genome = duplicated_genome.get_gene_multiset()
 
-        self.s_all_genes = create_complete_genes_multiset(reduce(operator.or_, self.gene_sets, set()) |
-                                                          self.genes_of_dupl_genome.keys(), 1)
+        self.s_all_genes = complete_genes_multiset(reduce(operator.or_, self.gene_sets, set()) |
+                                                   self.genes_of_dupl_genome.keys(), 1)
 
         # Coding contracted breakpoint graph
-        self.cbg_vertex_set = create_vertex_set_from_gene_multiset(self.s_all_genes)
+        self.cbg_vertex_set = vertex_set_from_gene_multiset(self.s_all_genes)
         self.cbg_ind2vertex = [''] + [u for u in self.cbg_vertex_set]
         self.cbg_vertex2ind = {self.cbg_ind2vertex[i]: i for i in range(1, len(self.cbg_ind2vertex))}
 
-        obverse_edges = create_observed_edges_from_gene_multiset(self.s_all_genes)
+        obverse_edges = observed_edges_from_gene_multiset(self.s_all_genes)
         self.ind_cbg_obverse_edges = {tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v])))
                                       for u, v in obverse_edges}
 
         genome_graphs = [genome.convert_to_genome_graph() for genome in ordinary_genomes]
         self.ind_cbg_p_i_vertex_sets = [{self.cbg_vertex2ind[u] for u in
-                                        create_vertex_set_from_gene_multiset(create_complete_genes_multiset(gene_set, 1))}
+                                         vertex_set_from_gene_multiset(complete_genes_multiset(gene_set, 1))}
                                         for gene_set in self.gene_sets]
         self.ind_cbg_p_i_edges = [{tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in matching}
                                   for matching, _ in genome_graphs]
@@ -50,20 +50,20 @@ class RestrictedHalvingConf(object):
         # This contracted genome graph does not contain parallel edges. Maybe a problem.
         cbg_A_matching, cbg_A_telomers = duplicated_genome.convert_to_contracted_genome_graph()
         self.ind_cbg_A_vertices = {self.cbg_vertex2ind[u] for u in
-                                  create_vertex_set_from_gene_multiset(create_complete_genes_multiset(self.genes_of_dupl_genome.keys(), 1))}
+                                   vertex_set_from_gene_multiset(complete_genes_multiset(self.genes_of_dupl_genome.keys(), 1))}
         self.ind_cbg_A_edges = {tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in cbg_A_matching}
         self.ind_cbg_A_telomers = {self.cbg_vertex2ind[u] for u in cbg_A_telomers}
 
-        self.ms_all_genes = create_complete_genes_multiset(reduce(operator.or_, self.gene_sets, set()) |
-                                                           self.genes_of_dupl_genome.keys(), mult)
+        self.ms_all_genes = complete_genes_multiset(reduce(operator.or_, self.gene_sets, set()) |
+                                                    self.genes_of_dupl_genome.keys(), mult)
 
         # Coding breakpoint graph
-        self.bg_vertex_set = create_vertex_set_from_gene_multiset(self.ms_all_genes)
+        self.bg_vertex_set = vertex_set_from_gene_multiset(self.ms_all_genes)
         self.bg_ind2vertex = [''] + [u for u in self.bg_vertex_set]
         self.bg_vertex2ind = {self.bg_ind2vertex[i]: i for i in range(1, len(self.bg_ind2vertex))}
 
         bg_A_matching, bg_A_telomers = duplicated_genome.convert_to_genome_graph()
-        self.ind_bg_A_vertices = {self.bg_vertex2ind[u] for u in create_vertex_set_from_gene_multiset(self.genes_of_dupl_genome)}
+        self.ind_bg_A_vertices = {self.bg_vertex2ind[u] for u in vertex_set_from_gene_multiset(self.genes_of_dupl_genome)}
         self.ind_bg_A_edges = {tuple(sorted((self.bg_vertex2ind[u], self.bg_vertex2ind[v]))) for u, v in bg_A_matching}
         self.ind_bg_A_telomers = {self.bg_vertex2ind[u] for u in bg_A_telomers}
 
