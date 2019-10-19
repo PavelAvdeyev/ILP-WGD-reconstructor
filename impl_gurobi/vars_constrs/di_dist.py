@@ -8,7 +8,7 @@ from impl_gurobi.vars_constrs.ord_matching import define_matching_vars, define_g
 from impl_gurobi.vars_constrs.ord_singleton import create_vars_vertices_in_singleton, \
     add_constr_representative_neq_zero, \
     add_constr_vertex_in_singleton_has_edge
-from impl_gurobi.common import create_general_allowable_set, create_general_conditional_set
+from impl_gurobi.common import general_allowable_set, general_conditional_set
 
 logger = logging.getLogger()
 
@@ -19,14 +19,14 @@ def di_dist_without_singletons(model, rs, cfg, ind):
 
     logger.info("Creating completion variables.")
     hat_rs = define_matching_vars(model=model,
-                                  edge_set=create_general_allowable_set(completion_for_p_ind),
-                                  edge_conditions=create_general_conditional_set(completion_for_p_ind),
+                                  edge_set=general_allowable_set(completion_for_p_ind),
+                                  edge_conditions=general_conditional_set(completion_for_p_ind),
                                   vertex_set=[],
                                   vertex_conditions={x: False for x in completion_for_p_ind})
 
     hat_ps = define_matching_vars(model=model,
-                                  edge_set=create_general_allowable_set(completion_for_m),
-                                  edge_conditions=create_general_conditional_set(completion_for_m),
+                                  edge_set=general_allowable_set(completion_for_m),
+                                  edge_conditions=general_conditional_set(completion_for_m),
                                   vertex_set=[],
                                   vertex_conditions={x: False for x in completion_for_m})
 
@@ -45,13 +45,13 @@ def di_dist_without_singletons(model, rs, cfg, ind):
                                            biggest_const=cfg.biggest_const)
 
     add_uncertain_connectivity_constraints(model=model,
-                                           edge_set=create_general_allowable_set(completion_for_m),
+                                           edge_set=general_allowable_set(completion_for_m),
                                            connect_vars=bs,
                                            edge_vars=hat_ps,
                                            biggest_const=cfg.biggest_const)
 
     add_uncertain_connectivity_constraints(model=model,
-                                           edge_set=create_general_allowable_set(completion_for_p_ind),
+                                           edge_set=general_allowable_set(completion_for_p_ind),
                                            connect_vars=bs,
                                            edge_vars=hat_rs,
                                            biggest_const=cfg.biggest_const)
@@ -80,7 +80,7 @@ def di_dist_with_singletons(model, rs, cfg, ind):
                                          connect_vars=ss)
 
     add_uncertain_connectivity_constraints(model=model,
-                                           edge_set=create_general_allowable_set(completion_for_m),
+                                           edge_set=general_allowable_set(completion_for_m),
                                            connect_vars=ss,
                                            edge_vars=rs,
                                            biggest_const=cfg.biggest_const)
@@ -107,14 +107,14 @@ def di_dist_with_singletons(model, rs, cfg, ind):
 
     logger.info("Creating completion variables.")
     hat_rs = define_matching_vars(model=model,
-                                  edge_set=create_general_allowable_set(completion_for_p_ind),
-                                  edge_conditions=create_general_conditional_set(completion_for_p_ind),
+                                  edge_set=general_allowable_set(completion_for_p_ind),
+                                  edge_conditions=general_conditional_set(completion_for_p_ind),
                                   vertex_set=[],
                                   vertex_conditions={x: False for x in completion_for_p_ind})
 
     hat_ps = define_matching_vars(model=model,
-                                  edge_set=create_general_allowable_set(completion_for_m),
-                                  edge_conditions=create_general_conditional_set(completion_for_m),
+                                  edge_set=general_allowable_set(completion_for_m),
+                                  edge_conditions=general_conditional_set(completion_for_m),
                                   vertex_set=hat_ss,
                                   vertex_conditions={x: True for x in completion_for_m})
 
@@ -133,13 +133,13 @@ def di_dist_with_singletons(model, rs, cfg, ind):
                                            biggest_const=cfg.biggest_const)
 
     add_uncertain_connectivity_constraints(model=model,
-                                           edge_set=create_general_allowable_set(completion_for_m),
+                                           edge_set=general_allowable_set(completion_for_m),
                                            connect_vars=bs,
                                            edge_vars=hat_ps,
                                            biggest_const=cfg.biggest_const)
 
     add_uncertain_connectivity_constraints(model=model,
-                                           edge_set=create_general_allowable_set(completion_for_p_ind),
+                                           edge_set=general_allowable_set(completion_for_p_ind),
                                            connect_vars=bs,
                                            edge_vars=hat_rs,
                                            biggest_const=cfg.biggest_const)

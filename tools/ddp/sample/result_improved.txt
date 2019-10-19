@@ -1,0 +1,8 @@
+# Objective value
+17
+# Total DCJ-Indel Distance
+3
+# Is it solved 
+solved
+# Total time 
+0:00:00.034253

@@ -3,7 +3,7 @@ import os
 import itertools
 
 from utils.genome import Genome, get_extremity_by_gene
-import bg.breakpoint_graph
+# import bg.breakpoint_graph
 
 
 def get_immediate_subdirectories(a_dir):
@@ -22,7 +22,7 @@ def get_immediate_files(a_dir):
 
 
 class ILPAnswer(object):
-    def __init__(self, ov=0, score=0, es = 0, genome=None, tm=0):
+    def __init__(self, ov=0, score=0, es=0, genome=None, tm=0):
         self.obj_val = ov
         self.score = score
         self.exit_status = es
@@ -36,7 +36,12 @@ class ILPAnswer(object):
             out.write("# Total DCJ-Indel Distance\n")
             out.write(str(self.score) + "\n")
             out.write("# Is it solved \n")
-            out.write(str(self.exit_status) + "\n")
+            status_to_string = {0: 'time limit exceeded',
+                                1: 'solved',
+                                2: 'interrupted'}
+            out.write(status_to_string[self.exit_status] + "\n")
+            out.write("# Total time \n")
+            out.write(str(self.solution_time))
 
     def write_genome_file(self, out_genome_file):
         with open(out_genome_file, 'w') as out:
@@ -115,14 +120,14 @@ def get_genome_graph_from_vars(rs, r_dot, gene_set, edge_set, telomer_set, ind2v
     return result_graph.get_blocks_order()
 
 
-def create_complete_genes_multiset(gene_set, copies):
+def complete_genes_multiset(gene_set, copies):
     complete_multiset = dict()
     for gene in gene_set:
         complete_multiset[gene] = copies
     return complete_multiset
 
 
-def create_vertex_set_from_gene_multiset(gene_multiset):
+def vertex_set_from_gene_multiset(gene_multiset):
     vertex_set = set()
     for gene, copies in gene_multiset.items():
         for left in [True, False]:
@@ -131,7 +136,7 @@ def create_vertex_set_from_gene_multiset(gene_multiset):
     return vertex_set
 
 
-def create_observed_edges_from_gene_multiset(gene_multiset):
+def observed_edges_from_gene_multiset(gene_multiset):
     obverse_edges = set()
     for gene, copies in gene_multiset.items():
         for i in range(1, copies + 1):
@@ -139,15 +144,19 @@ def create_observed_edges_from_gene_multiset(gene_multiset):
     return obverse_edges
 
 
-def create_general_allowable_set(vertex_set):
+def general_allowable_set(vertex_set):
     return {tuple(sorted([u, v])) for u, v in itertools.combinations(vertex_set, 2)}
 
 
-def create_general_conditional_set(vertex_set):
+def product_set(vertex_set1, vertex_set2):
+    return set(tuple(sorted([u, v])) for u, v in itertools.product(vertex_set1, vertex_set2) if u != v)
+
+
+def general_conditional_set(vertex_set):
     return {u: {tuple(sorted((u, v))) for v in vertex_set if u != v} for u in vertex_set}
 
 
-def create_conserved_allowable_set(vertex_set, graph, telomers):
+def conserved_allowable_set(vertex_set, graph, telomers):
     allowable_edge_set = set()
     for v in vertex_set:
         for u1, u2 in graph.edges(v):
