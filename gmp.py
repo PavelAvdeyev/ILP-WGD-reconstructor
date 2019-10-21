@@ -3,9 +3,8 @@ import logging
 
 import os
 
-from impl_gurobi.common import get_immediate_subdirectories
-from utils.common import epilog, enable_logging, version
-from utils.medians import medians_without_singletons
+from utils.common import epilog, enable_logging, version, get_immediate_subdirectories
+from utils.medians import medians_with_singletons
 
 
 def do_test_job(input_directory, gurobi_log_file):
@@ -26,13 +25,13 @@ def do_test_job(input_directory, gurobi_log_file):
             result_out_file = os.path.join(ilppath, "result.txt")
             genome_out_file = os.path.join(ilppath, "median.gen")
 
-            medians_without_singletons(genome_files=[genome1, genome2, genome3],
-                                       out_result_file=result_out_file,
-                                       out_median_file=genome_out_file,
-                                       problem="GMP",
-                                       gurobi_log_file=gurobi_log_file,
-                                       time_limit=7200
-                                       )
+            medians_with_singletons(genome_files=[genome1, genome2, genome3],
+                                    out_result_file=result_out_file,
+                                    out_median_file=genome_out_file,
+                                    problem="GMP",
+                                    gurobi_log_file=gurobi_log_file,
+                                    time_limit=7200
+                                    )
 
 
 def test_run():
@@ -97,12 +96,12 @@ def main():
     result_out_file = os.path.join(args.out_dir, "result.txt")
     genome_out_file = os.path.join(args.out_dir, "median.gen")
 
-    medians_without_singletons(genome_files=path_to_genomes,
-                               out_result_file=result_out_file,
-                               out_median_file=genome_out_file,
-                               problem="GMP",
-                               gurobi_log_file=args.gurobi_log_file,
-                               time_limit=args.time_limit)
+    medians_with_singletons(genome_files=path_to_genomes,
+                            out_result_file=result_out_file,
+                            out_median_file=genome_out_file,
+                            problem="GMP",
+                            gurobi_log_file=args.gurobi_log_file,
+                            time_limit=args.time_limit)
 
 
 if __name__ == "__main__":

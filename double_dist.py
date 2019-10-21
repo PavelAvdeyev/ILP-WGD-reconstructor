@@ -6,12 +6,11 @@ from functools import reduce
 
 import os
 
-from utils.common import epilog, enable_logging, version
+from utils.common import epilog, enable_logging, version, get_immediate_subdirectories
 from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.double_distanse import create_ilp_formulation_for_ddp
-from impl_gurobi.common import remove_singletons_in_ord_wrt_two_dupl, remove_singletons_dupl_wrt_gene_set, \
-    create_complete_genes_multiset, define_equiv_function, create_vertex_set_from_gene_multiset, \
-    get_immediate_subdirectories
+from impl_gurobi.common import remove_singletons_in_ord_wrt_two_dupl, complete_genes_multiset, \
+    define_equiv_function, vertex_set_from_gene_multiset
 
 logger = logging.getLogger()
 
@@ -25,30 +24,30 @@ class DoubleDistConf(object):
         self.genes_of_dupl_genome = duplicated_genome.get_gene_multiset()
         self.genes_of_ord_genome = ordinary_genome.get_gene_multiset()
 
-        self.s_all_genes = create_complete_genes_multiset(
+        self.s_all_genes = complete_genes_multiset(
             self.genes_of_ord_genome.keys() | self.genes_of_dupl_genome.keys(), 1)
-        self.ms_all_genes = create_complete_genes_multiset(
+        self.ms_all_genes = complete_genes_multiset(
             self.genes_of_ord_genome.keys() | self.genes_of_dupl_genome.keys(), mult)
 
         # Coding breakpoint graph
-        self.bg_vertex_set = create_vertex_set_from_gene_multiset(self.ms_all_genes)
+        self.bg_vertex_set = vertex_set_from_gene_multiset(self.ms_all_genes)
         self.bg_ind2vertex = [''] + [u for u in self.bg_vertex_set]
         self.bg_vertex2ind = {self.bg_ind2vertex[i]: i for i in range(1, len(self.bg_ind2vertex))}
 
         bg_A_matching, bg_A_telomers = duplicated_genome.convert_to_genome_graph()
         self.ind_bg_A_vertices = {self.bg_vertex2ind[u] for u in
-                                  create_vertex_set_from_gene_multiset(self.genes_of_dupl_genome)}
+                                  vertex_set_from_gene_multiset(self.genes_of_dupl_genome)}
         self.ind_bg_A_edges = {tuple(sorted((self.bg_vertex2ind[u], self.bg_vertex2ind[v]))) for u, v in bg_A_matching}
         self.ind_bg_A_telomers = {self.bg_vertex2ind[u] for u in bg_A_telomers}
 
         # Coding contracted breakpoint graph
-        self.cbg_vertex_set = create_vertex_set_from_gene_multiset(self.s_all_genes)
+        self.cbg_vertex_set = vertex_set_from_gene_multiset(self.s_all_genes)
         self.cbg_ind2vertex = [''] + [u for u in self.cbg_vertex_set]
         self.cbg_vertex2ind = {self.cbg_ind2vertex[i]: i for i in range(1, len(self.cbg_ind2vertex))}
 
         cbg_R_matching, cbg_R_telomers = ordinary_genome.convert_to_genome_graph()
         self.ind_cbg_R_vertices = {self.cbg_vertex2ind[u] for u in
-                                   create_vertex_set_from_gene_multiset(self.genes_of_ord_genome)}
+                                   vertex_set_from_gene_multiset(self.genes_of_ord_genome)}
         self.ind_cbg_R_edges = {tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in
                                 cbg_R_matching}
         self.ind_cbg_R_telomers = {self.cbg_vertex2ind[u] for u in cbg_R_telomers}
@@ -77,8 +76,8 @@ def solve_double_distance_problem(ord_genome_file, all_dupl_genome_file, out_res
     ord_genome = parse_genome_in_grimm_file(ord_genome_file)
     all_dupl_genome = parse_genome_in_grimm_file(all_dupl_genome_file)
 
-    ord_genome = remove_singletons_in_ord_wrt_two_dupl(ord_genome, all_dupl_genome)
-    all_dupl_genome = remove_singletons_dupl_wrt_gene_set(all_dupl_genome, set(ord_genome.get_gene_multiset().keys()))
+    # ord_genome = remove_singletons_in_ord_wrt_two_dupl(ord_genome, all_dupl_genome)
+    # all_dupl_genome = remove_singletons_dupl_wrt_gene_set(all_dupl_genome, set(ord_genome.get_gene_multiset().keys()))
 
     logging.info('Create ILP config')
     config = DoubleDistConf(ordinary_genome=ord_genome, duplicated_genome=all_dupl_genome, name="DDP",

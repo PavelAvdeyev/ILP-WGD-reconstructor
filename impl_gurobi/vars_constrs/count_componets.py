@@ -5,16 +5,17 @@ import gurobipy
 logger = logging.getLogger()
 
 
-def create_connectivity_variables(model, vertex_set):
+def create_connectivity_variables(model, vertex_set, suffix):
     logger.info("Creating integer connectivity variables.")
 
     connect_vars = model.addVars([v for v in vertex_set],
                                  lb=[0 for _ in vertex_set],
                                  ub=[v for v in vertex_set],
-                                 vtype=gurobipy.GRB.INTEGER)
+                                 vtype=gurobipy.GRB.INTEGER,
+                                 name=suffix)
 
     logger.info("Creating binary tilde connectivity variables.")
-    tilde_connect_vars = model.addVars(vertex_set, vtype=gurobipy.GRB.BINARY)
+    tilde_connect_vars = model.addVars(vertex_set, vtype=gurobipy.GRB.BINARY, name="tilde_" + suffix)
 
     logger.info("Creating constraints on tilde connectivity variables.")
     model.addConstrs(v * tilde_connect_vars[v] <= connect_vars[v] for v in vertex_set)
@@ -36,22 +37,36 @@ def add_uncertain_connectivity_constraints(model, edge_set, connect_vars, edge_v
         model.addConstr(connect_vars[j] <= connect_vars[i] + biggest_const * (1 - edge_vars[i, j]))
 
 
-def create_varibles_vertex_in_component(model, vertex_set, connect_vars, component_set):
+def create_representing_variables(model, vertex_set, component_set, component_vars, name):
     logger.info("Creating indicator variables for representative.")
-    dot_vars = model.addVars({(k, z) for k in vertex_set for z in component_set}, vtype=gurobipy.GRB.BINARY)
+    dot_vars = model.addVars({(k, z) for k in vertex_set for z in component_set},
+                             vtype=gurobipy.GRB.BINARY,
+                             name=name)
 
-    logger.info("Creating constraints for determine to which component vertex belongs.")
-    model.addConstrs(dot_vars.sum(k, '*') == connect_vars[k] for k in vertex_set)
-
-    return dot_vars
+    for k in vertex_set:
+        model.addConstr(gurobipy.quicksum(k * dot_vars[k, z] for z in component_set) == component_vars[k])
 
 
-def add_constr_vertices_in_comp_or(model, vertex_set, dot_vars, singleton_vars):
+def add_ensuring_belonging_constraints(model, vertex_set, representing_vars, belonging_vars, negotiation=False):
     logger.info("Creating constraints to determine vertices in the component or singleton.")
-    model.addConstrs(dot_vars.sum(k, '*') == 1 - singleton_vars[k] for k in vertex_set)
+    if negotiation:
+        model.addConstrs(representing_vars.sum(k, '*') == 1 - belonging_vars[k] for k in vertex_set)
+    else:
+        model.addConstrs(representing_vars.sum(k, '*') == belonging_vars[k] for k in vertex_set)
 
 
-def create_vars_count_odd_paths(model, connect_vars, telomeric_vertices, biggest_const):
+def add_ensuring_non_zero_constraints(model, dot_vars, component_set, tilde_vars, biggest_const):
+    logger.info("Creating constraints that representative vertex has nonzero value.")
+    model.addConstrs(dot_vars.sum('*', z) <= biggest_const * tilde_vars[z] for z in component_set)
+
+
+def add_ensuring_edge_constraints(model, hat_vars, genome_vars, vertex_set):
+    logger.info("Creating constraints that vertex has R-edge.")
+    for k in vertex_set:
+        model.addConstr(hat_vars[k] <= gurobipy.quicksum(genome_vars[k, j] for j in vertex_set))
+
+
+def create_odd_path_variables(model, connect_vars, telomeric_vertices, biggest_const):
     logger.info("Creating hat_variables for telomeric vertices.")
     hat_as = model.addVars({tuple(sorted([u, v])) for u, v in itertools.combinations(telomeric_vertices, 2)},
                            vtype=gurobipy.GRB.BINARY)
@@ -70,4 +85,5 @@ def create_vars_count_odd_paths(model, connect_vars, telomeric_vertices, biggest
             connect_vars[ind1] >= connect_vars[ind2] + (1 - hat_as[ind1, ind2]) - biggest_const * (1 - tmp_vars[i]))
 
     return hat_as
+
 

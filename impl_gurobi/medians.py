@@ -9,17 +9,27 @@ logger = logging.getLogger()
 
 
 def create_ilp_formulation_for_medians_with_singletons(cfg):
+    """
+    :param cfg: Median configuration object with all information
+                about ILP formultaion, i.e., gene set, index sets, index constraints set.
+                For more details see file utils/medians.py
+    :return: ILP answer object that contains reconstructed genome, status of ILP solver, median score.
+
+    This function takes into account possibility of appearing singletons in median genome.
+    """
     try:
         model = gurobipy.Model(cfg.name_model)
 
         logger.info("START CREATING MODEL.")
-        dot_rs = model.addVars({x for x, cond in cfg.allowable_ancestral_telomers.items() if cond}, vtype=gurobipy.GRB.BINARY)
+        dot_rs = model.addVars({x for x, cond in cfg.allowable_ancestral_telomers.items() if cond},
+                               vtype=gurobipy.GRB.BINARY, name="dot_rs")
 
         rs = define_matching_vars(model=model,
                                   edge_set=cfg.allowable_ancestral_edges,
                                   edge_conditions=cfg.connection_ancestral_constrs,
                                   vertex_set=dot_rs,
-                                  vertex_conditions=cfg.allowable_ancestral_telomers)
+                                  vertex_conditions=cfg.allowable_ancestral_telomers,
+                                  name="rs")
 
         tilde_bs, hat_bs, tilde_ss, hat_ss = [], [], [], []
         for i in range(cfg.number_of_genomes):
@@ -57,13 +67,15 @@ def create_ilp_formulation_for_medians_without_singletons(cfg):
         model = gurobipy.Model(cfg.name_model)
 
         logger.info("START CREATING MODEL.")
-        dot_rs = model.addVars({x for x, cond in cfg.allowable_ancestral_telomers.items() if cond}, vtype=gurobipy.GRB.BINARY)
+        dot_rs = model.addVars({x for x, cond in cfg.allowable_ancestral_telomers.items() if cond},
+                               vtype=gurobipy.GRB.BINARY, name="dot_rs")
 
         rs = define_matching_vars(model=model,
                                   edge_set=cfg.allowable_ancestral_edges,
                                   edge_conditions=cfg.connection_ancestral_constrs,
                                   vertex_set=dot_rs,
-                                  vertex_conditions=cfg.allowable_ancestral_telomers)
+                                  vertex_conditions=cfg.allowable_ancestral_telomers,
+                                  name='rs')
 
         tilde_bs, hat_bs = [], []
         for i in range(cfg.number_of_genomes):

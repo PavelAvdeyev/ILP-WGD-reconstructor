@@ -4,9 +4,9 @@ import gurobipy
 logger = logging.getLogger()
 
 
-def define_matching_vars(model, edge_set, edge_conditions, vertex_set, vertex_conditions):
+def define_matching_vars(model, edge_set, edge_conditions, vertex_set, vertex_conditions, name):
     logger.info("Defining variables for matching from edge set.")
-    ps = model.addVars(edge_set, vtype=gurobipy.GRB.BINARY)
+    ps = model.addVars(edge_set, vtype=gurobipy.GRB.BINARY, name=name)
 
     logger.info("Adding constraints on matching set.")
     for x, cond in vertex_conditions.items():
@@ -50,52 +50,3 @@ def define_guided_matching_using_graph(model, edge_conditions, equiv_map, edge_v
                 model.addConstr(xes[min(ind1, ind2), max(ind1, ind2)] + xes[min(ind1, ind3), max(ind1, ind3)] == 1)
 
     return xes, indexing_vars
-
-
-# def define_uncertain_guided_matching_between_graphs(model, xes, res, edge_set, equiv_map):
-#     logger.info("Define X-matching variables.")
-#
-#     indexing_vars = set()
-#     for u, v in edge_set:
-#         assert len(equiv_map[u]) == 2 and len(equiv_map[v]) == 2
-#         i1, j1 = equiv_map[u]
-#         i2, j2 = equiv_map[v]
-#
-#         for ind1, ind2 in [(i1, i2), (i1, j2), (j1, i2), (j1, j2)]:
-#             indexing_vars.add((min(ind1, ind2), max(ind1, ind2)))
-#
-#     xes.update(model.addVars(indexing_vars, vtype=gurobipy.GRB.BINARY))
-#
-#     logger.info("Define constraints look like x_i1j2 + x_i1i2 = 1.")
-#     for u, v in edge_set:
-#         u, v = tuple(sorted([u, v]))
-#         i1, j1 = equiv_map[u]
-#         i2, j2 = equiv_map[v]
-#         for ind1, ind2, ind3 in [(i1, i2, j2), (j1, i2, j2), (i2, i1, j1), (j2, i1, j1)]:
-#             model.addConstr(xes[min(ind1, ind2), max(ind1, ind2)] + xes[min(ind1, ind3), max(ind1, ind3)] == res[u, v])
-#
-#     return indexing_vars
-
-# def define_certain_guided_matching_between_graphs(model, xes, edge_set, equiv_map):
-#     logger.info("Define X-matching variables.")
-#
-#     indexing_vars = set()
-#     for u, v in edge_set:
-#         assert len(equiv_map[u]) == 2 and len(equiv_map[v]) == 2
-#         i1, j1 = equiv_map[u]
-#         i2, j2 = equiv_map[v]
-#
-#         for ind1, ind2 in [(i1, i2), (i1, j2), (j1, i2), (j1, j2)]:
-#             indexing_vars.add((min(ind1, ind2), max(ind1, ind2)))
-#
-#     xes.update(model.addVars(indexing_vars, vtype=gurobipy.GRB.BINARY))
-#
-#     logger.info("Define constraints look like x_i1j2 + x_i1i2 = 1.")
-#     for u, v in edge_set:
-#         u, v = tuple(sorted([u, v]))
-#         i1, j1 = equiv_map[u]
-#         i2, j2 = equiv_map[v]
-#         for ind1, ind2, ind3 in [(i1, i2, j2), (j1, i2, j2), (i2, i1, j1), (j2, i1, j1)]:
-#             model.addConstr(xes[min(ind1, ind2), max(ind1, ind2)] + xes[min(ind1, ind3), max(ind1, ind3)] == 1)
-#
-#     return indexing_vars

@@ -46,7 +46,8 @@ def create_ilp_formulation_for_restricted_median(cfg):
         answer = get_param_of_solution_for_restricted_median(model=model, cfg=cfg, rs=rs, dot_rs=dot_rs)
         return answer
     except gurobipy.GurobiError as e:
-        logger.error("Some error has been raised. Please, report to github bug tracker. \n Text exception: {0}".format(e))
+        logger.error(
+            "Some error has been raised. Please, report to github bug tracker. \n Text exception: {0}".format(e))
 
 
 def get_param_of_solution_for_restricted_median(model, cfg, rs, dot_rs):

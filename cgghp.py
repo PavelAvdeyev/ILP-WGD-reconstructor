@@ -3,8 +3,7 @@ import logging
 
 import os
 
-from impl_gurobi.common import get_immediate_subdirectories
-from utils.common import epilog, enable_logging, version
+from utils.common import epilog, enable_logging, version, get_immediate_subdirectories
 from utils.halvings import halvings_without_singletons
 
 
