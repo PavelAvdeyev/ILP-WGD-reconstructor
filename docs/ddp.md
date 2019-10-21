@@ -1,5 +1,5 @@
 # Double Distance Problem
-`double_dist.py` creates the ILP formulation for the Double Distance Problem
+`ddp.py` creates the ILP formulation for the Double Distance Problem
 and runs Gurobi Solver.  
 
 ```
@@ -23,10 +23,10 @@ Gurobi solver is required! Input genomes must be in GRIMM format.
 ```
 
 ### Examples
-You can try `double_dist.py` on the provided ready-to-use examples:
+You can try `ddp.py` on the provided ready-to-use examples:
 
 ```bash
- python double_dist.py --ordinary examples/ord.gen --two_dupl examples/a.gen -o test/
+ python ddp.py --ordinary examples/ord.gen --two_dupl examples/a.gen -o test/
 ```
 
 ### Input
@@ -39,7 +39,7 @@ You can try `double_dist.py` on the provided ready-to-use examples:
 Optionally, a time limit may be set for Gurobi Solver (it is 2 hours by default). 
 
 ### Output
-After running `double_dist.py`, the output directory will contain:
+After running `ddp.py`, the output directory will contain:
 - `result.txt` - file with exit status (0 - stopped by reaching TL, 1 - optimal solution, 2 - other),
 optimized value of the objective function, and the distance between the
 pre-duplicated genome and 2-duplicated genome
