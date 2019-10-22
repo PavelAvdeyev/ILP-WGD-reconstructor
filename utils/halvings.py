@@ -7,8 +7,8 @@ import operator
 
 from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.halvings import create_ilp_formulation_for_halvings_without_singletons
-from impl_gurobi.common import complete_genes_multiset, remove_singletons_dupl_wrt_gene_set, \
-    observed_edges_from_gene_multiset, vertex_set_from_gene_multiset, define_equiv_function
+from utils.set_definer import complete_genes_multiset, vertex_set_from_gene_multiset, \
+    observed_edges_from_gene_multiset, define_equiv_function
 
 logger = logging.getLogger()
 
@@ -46,8 +46,10 @@ class HalvingConf(object):
         # This contracted genome graph does not contain parallel edges. Maybe a problem.
         cbg_A_matching, cbg_A_telomers = duplicated_genome.convert_to_contracted_genome_graph()
         self.ind_cbg_A_vertices = {self.cbg_vertex2ind[u] for u in
-                                   vertex_set_from_gene_multiset(complete_genes_multiset(self.genes_of_dupl_genome.keys(), 1))}
-        self.ind_cbg_A_edges = {tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in cbg_A_matching}
+                                   vertex_set_from_gene_multiset(
+                                       complete_genes_multiset(self.genes_of_dupl_genome.keys(), 1))}
+        self.ind_cbg_A_edges = {tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in
+                                cbg_A_matching}
         self.ind_cbg_A_telomers = {self.cbg_vertex2ind[u] for u in cbg_A_telomers}
 
         self.ms_all_genes = complete_genes_multiset(reduce(operator.or_, self.gene_sets, set()) |
@@ -58,7 +60,8 @@ class HalvingConf(object):
         self.bg_vertex2ind = {self.bg_ind2vertex[i]: i for i in range(1, len(self.bg_ind2vertex))}
 
         bg_A_matching, bg_A_telomers = duplicated_genome.convert_to_genome_graph()
-        self.ind_bg_A_vertices = {self.bg_vertex2ind[u] for u in vertex_set_from_gene_multiset(self.genes_of_dupl_genome)}
+        self.ind_bg_A_vertices = {self.bg_vertex2ind[u] for u in
+                                  vertex_set_from_gene_multiset(self.genes_of_dupl_genome)}
         self.ind_bg_A_edges = {tuple(sorted((self.bg_vertex2ind[u], self.bg_vertex2ind[v]))) for u, v in bg_A_matching}
         self.ind_bg_A_telomers = {self.bg_vertex2ind[u] for u in bg_A_telomers}
 
@@ -98,7 +101,7 @@ class ClassicHalving(HalvingConf):
 
         self.allowable_ancestral_telomers = {x: flag for x in self.ind_ancestral_set}
         self.connection_ancestral_constrs = {u: {tuple(sorted((u, v))) for v in self.ind_ancestral_set if u != v}
-                                   for u in self.ind_ancestral_set}
+                                             for u in self.ind_ancestral_set}
 
 
 class ConservedHalving(HalvingConf):
@@ -106,7 +109,8 @@ class ConservedHalving(HalvingConf):
         super().__init__(duplicated_genome, ordinary_genomes, name, log_file, tl, mult)
 
         set_all_telomers = reduce(operator.or_, self.ind_cbg_p_i_telomers, set()) | self.ind_cbg_A_telomers
-        self.allowable_ancestral_telomers = {x: True if x in set_all_telomers else False for x in self.ind_ancestral_set}
+        self.allowable_ancestral_telomers = {x: True if x in set_all_telomers else False for x in
+                                             self.ind_ancestral_set}
 
         graph = nx.MultiGraph()
         for edges in self.ind_cbg_p_i_edges:
@@ -162,12 +166,3 @@ def halvings_without_singletons(ordinary_genome_file, all_dupl_genome_file, out_
         answer.write_genome_file(out_predup_file)
     else:
         logging.info('There are no answers. Please, check log file.')
-
-
-# def remove_known_singletons_for_halving(ordinary_genome_file, all_dupl_genome_file):
-#     ord_genome = parse_genome_in_grimm_file(ordinary_genome_file)
-#     all_dupl_genome = parse_genome_in_grimm_file(all_dupl_genome_file)
-#     S_R = get_genome_set(ord_genome, all_dupl_genome)
-#     ord_genome = remove_singletons_in_A_wrt_set_B(ord_genome, S_R)
-#     all_dupl_genome = remove_singletons_in_A_wrt_set_B(all_dupl_genome, S_R)
-#     return ord_genome, all_dupl_genome

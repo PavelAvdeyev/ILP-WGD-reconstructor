@@ -3,7 +3,8 @@ import gurobipy
 
 from impl_gurobi.vars_constrs.di_dist import di_dist_without_singletons
 from impl_gurobi.vars_constrs.ord_matching import define_matching_vars
-from impl_gurobi.common import get_genome_graph_from_vars, ILPAnswer
+from impl_gurobi.common import get_genome_graph_from_vars
+from utils.answer import ILPAnswer
 
 logger = logging.getLogger()
 
@@ -19,7 +20,8 @@ def create_ilp_formulation_for_restricted_median(cfg):
                                   edge_set=cfg.allowable_ancestral_edges,
                                   edge_conditions=cfg.connection_constrs,
                                   vertex_set=dot_rs,
-                                  vertex_conditions=cfg.allowable_telomers)
+                                  vertex_conditions=cfg.allowable_telomers,
+                                  name="rs")
 
         tilde_bs, hat_bs = [], []
         for i in range(cfg.number_of_genomes):
@@ -60,7 +62,7 @@ def get_param_of_solution_for_restricted_median(model, cfg, rs, dot_rs):
     else:
         obj_val = int(model.objVal)
 
-        number_of_vertices = len(cfg.ind_ancestral_set.union(cfg.ind_cbg_p_i_vertex_sets[2]))
+        number_of_vertices = len(cfg.ind_ancestral_set)
 
         dist = number_of_vertices - obj_val - cfg.number_of_cycles - cfg.number_of_even_paths // 2
 

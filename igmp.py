@@ -9,7 +9,7 @@ import os
 from utils.common import epilog, version, enable_logging, get_immediate_subdirectories
 from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.restricted_median import create_ilp_formulation_for_restricted_median
-from impl_gurobi.common import complete_genes_multiset, observed_edges_from_gene_multiset, \
+from utils.set_definer import complete_genes_multiset, observed_edges_from_gene_multiset, \
     vertex_set_from_gene_multiset
 
 logger = logging.getLogger()
@@ -65,7 +65,7 @@ class RestrictedMedianConf(object):
 
         graph = nx.MultiGraph()
         graph.add_nodes_from(self.cbg_vertex2ind.values())
-        for edges in self.ind_cbg_p_i_edges:
+        for edges in self.ind_cbg_p_i_edges[0:2]:
             for u, v in edges:
                 graph.add_edge(u, v)
 

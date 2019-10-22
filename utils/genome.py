@@ -92,11 +92,13 @@ class Chromosome(object):
 
         for block1, block2 in zip(self.blocks, self.blocks[1:]):
             appearing_genes[abs(block2)] += 1
-            edges.append((get_extremity_by_gene(block1, False, last), get_extremity_by_gene(block2, True, appearing_genes[abs(block2)])))
+            edges.append((get_extremity_by_gene(block1, False, last),
+                          get_extremity_by_gene(block2, True, appearing_genes[abs(block2)])))
             last = appearing_genes[abs(block2)]
 
         if self.is_circ:
-            edges.append((get_extremity_by_gene(self.blocks[-1], False, last), get_extremity_by_gene(self.blocks[0], True, start)))
+            edges.append((get_extremity_by_gene(self.blocks[-1], False, last),
+                          get_extremity_by_gene(self.blocks[0], True, start)))
         else:
             telomers.append(get_extremity_by_gene(self.blocks[-1], False, last))
             telomers.append(get_extremity_by_gene(self.blocks[0], True, start))
@@ -112,7 +114,8 @@ class Chromosome(object):
             edges.append((get_extremity_by_gene(block1, False, 1), get_extremity_by_gene(block2, True, 1)))
 
         if self.is_circ:
-            edges.append((get_extremity_by_gene(self.blocks[-1], False, 1), get_extremity_by_gene(self.blocks[0], True, 1)))
+            edges.append(
+                (get_extremity_by_gene(self.blocks[-1], False, 1), get_extremity_by_gene(self.blocks[0], True, 1)))
         else:
             telomers.append(get_extremity_by_gene(self.blocks[-1], False, 1))
             telomers.append(get_extremity_by_gene(self.blocks[0], True, 1))

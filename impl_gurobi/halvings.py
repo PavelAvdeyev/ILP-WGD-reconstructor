@@ -1,54 +1,12 @@
 import logging
 import gurobipy
 
-from impl_gurobi.common import ILPAnswer, get_genome_graph_from_vars
+from impl_gurobi.common import get_genome_graph_from_vars
 from impl_gurobi.vars_constrs.di_dist import di_dist_without_singletons, ddi_dist_without_singletons
 from impl_gurobi.vars_constrs.ord_matching import define_matching_vars
+from utils.answer import ILPAnswer
 
 logger = logging.getLogger()
-
-
-# def create_ilp_formulation_for_gghp(J_A, J_R, J_B, B_edges, obverse_edges, J_T_B, J_T_A, bar_J_hat_A, A_edges_in_hat_A,
-#                                     gene_set, J_T_A_in_hat_A, bar_J_hat_A_compl, equiv_map, biggest_const, cbg_ind2vertex):
-#     try:
-#         model = gurobipy.Model("GGHP")
-#
-#         logger.info("START CREATING MODEL.")
-#         rs, r_dot = create_vars_classic_genome(model=model, vertex_set=J_R)
-#
-#         tilde_b, hat_b, tilde_s, hat_s = di_dist_with_singletons(model=model, rs=rs, J_M=J_R, J_l=J_B,
-#                                                                  indexed_genome_edges=B_edges,
-#                                                                  indexed_obverse_edges=obverse_edges,
-#                                                                  indexed_telomers=J_T_B,
-#                                                                  biggest_const=biggest_const)
-#
-#         tilde_a, hat_a, tilde_d, hat_d = ddi_dist_with_singletons(model=model, rs=rs, J_R=J_R, J_A=J_A,
-#                                                                   bar_J_hat_A=bar_J_hat_A,
-#                                                                   bar_J_hat_A_compl=bar_J_hat_A_compl,
-#                                                                   A_edges_in_hat_A=A_edges_in_hat_A,
-#                                                                   J_T_A_in_hat_A=J_T_A_in_hat_A,
-#                                                                   equiv_map=equiv_map, biggest_const=biggest_const)
-#
-#         logger.info("CREATING OBJECTIVE FUNCTION.")
-#         model.setObjective(tilde_b.sum('*') - hat_b.sum('*') + 0.5 * hat_s.sum('*') - tilde_s.sum('*') -
-#                            1.5 * r_dot.sum('*') +
-#                            tilde_a.sum('*') - hat_a.sum('*') + hat_d.sum('*') - tilde_d.sum('*'),
-#                            gurobipy.GRB.MAXIMIZE)
-#
-#         logger.info("FINISH CREATE MODEL.")
-#         model.params.logFile = "gurobi_halving.log"
-#         model.params.MIPFocus = 2
-#         model.params.timeLimit = 7200
-#         model.optimize()
-#
-#         logger.info("the number of cycles and paths is " + str(int(model.objVal)))
-#         obj_val, ghp_score, exit_status = get_param_of_solution_for_halving_genome(model=model, J_A=J_A,
-#                                                                                    J_R=J_R, J_B=J_B)
-#         block_order = get_genome_graph_from_vars_for_problem(rs, r_dot, gene_set, itertools.combinations(J_R, 2),
-#                                                              J_R, cbg_ind2vertex)
-#         return obj_val, ghp_score, exit_status, block_order
-#     except gurobipy.GurobiError:
-#         print("Error raized")
 
 
 def create_ilp_formulation_for_halvings_without_singletons(cfg):
@@ -56,13 +14,15 @@ def create_ilp_formulation_for_halvings_without_singletons(cfg):
         model = gurobipy.Model(cfg.name_model)
 
         logger.info("START CREATING MODEL.")
-        dot_rs = model.addVars({x for x, cond in cfg.allowable_ancestral_telomers.items() if cond}, vtype=gurobipy.GRB.BINARY)
+        dot_rs = model.addVars({x for x, cond in cfg.allowable_ancestral_telomers.items() if cond},
+                               vtype=gurobipy.GRB.BINARY)
 
         rs = define_matching_vars(model=model,
                                   edge_set=cfg.allowable_ancestral_edges,
                                   edge_conditions=cfg.connection_ancestral_constrs,
                                   vertex_set=dot_rs,
-                                  vertex_conditions=cfg.allowable_ancestral_telomers)
+                                  vertex_conditions=cfg.allowable_ancestral_telomers,
+                                  name="rs")
 
         tilde_b, hat_b = di_dist_without_singletons(model=model, rs=rs, cfg=cfg, ind=0)
         tilde_a, hat_a = ddi_dist_without_singletons(model=model, rs=rs, cfg=cfg)

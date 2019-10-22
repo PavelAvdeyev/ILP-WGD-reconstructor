@@ -8,7 +8,7 @@ from utils.common import remove_singletons_wrt_gene_set
 from utils.genome import parse_genome_in_grimm_file
 from impl_gurobi.medians import create_ilp_formulation_for_medians_without_singletons, \
     create_ilp_formulation_for_medians_with_singletons
-from impl_gurobi.common import complete_genes_multiset, observed_edges_from_gene_multiset, \
+from utils.set_definer import complete_genes_multiset, observed_edges_from_gene_multiset, \
     vertex_set_from_gene_multiset
 
 logger = logging.getLogger()
@@ -106,7 +106,6 @@ def remove_known_singletons(genomes):
                         [gene_sets[i] & gene_sets[j] for i, j in itertools.combinations(range(len(genomes)), 2)],
                         set())
     total_number = 0
-
     for i in range(len(genomes)):
         genome, numb_of_singletons = remove_singletons_wrt_gene_set(genomes[i], median_set)
         genomes[i] = genome

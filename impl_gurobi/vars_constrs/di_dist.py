@@ -8,7 +8,7 @@ from impl_gurobi.vars_constrs.count_componets import create_connectivity_variabl
     create_odd_path_variables, add_ensuring_non_zero_constraints, \
     add_ensuring_edge_constraints
 from impl_gurobi.vars_constrs.ord_matching import define_matching_vars, define_guided_matching_using_graph
-from impl_gurobi.common import general_allowable_set, general_conditional_set
+from utils.set_definer import general_allowable_set, general_conditional_set
 
 logger = logging.getLogger()
 
@@ -47,7 +47,8 @@ def di_dist_without_singletons(model, rs, cfg, ind):
 
     logger.info("Creating connectivity variables and constraints.")
     bs, tilde_bs = create_connectivity_variables(model=model,
-                                                 vertex_set=(cfg.ind_ancestral_set | cfg.ind_cbg_p_i_vertex_sets[ind]))
+                                                 vertex_set=(cfg.ind_ancestral_set | cfg.ind_cbg_p_i_vertex_sets[ind]),
+                                                 suffix="ps")
 
     add_certain_connectivity_constraints(model=model,
                                          edges=cfg.ind_cbg_p_i_edges[ind],
@@ -155,7 +156,8 @@ def di_dist_with_singletons(model, rs, cfg, ind):
 
     logger.info("Creating connectivity variables and constraints.")
     bs, tilde_bs = create_connectivity_variables(model=model,
-                                                 vertex_set=(cfg.ind_ancestral_set | cfg.ind_cbg_p_i_vertex_sets[ind]))
+                                                 vertex_set=(cfg.ind_ancestral_set | cfg.ind_cbg_p_i_vertex_sets[ind]),
+                                                 suffix="ps")
 
     add_certain_connectivity_constraints(model=model,
                                          edges=cfg.ind_cbg_p_i_edges[ind],
@@ -190,7 +192,7 @@ def di_dist_with_singletons(model, rs, cfg, ind):
                                            vertex_set=completion_for_m,
                                            component_set=(cfg.ind_ancestral_set | cfg.ind_cbg_p_i_vertex_sets[ind]),
                                            component_vars=bs,
-                                           name="dot_bs")
+                                           name="dot_ps")
 
     add_ensuring_belonging_constraints(model=model,
                                        vertex_set=completion_for_m,
@@ -211,7 +213,8 @@ def ddi_dist_without_singletons(model, rs, cfg):
 
     logger.info("Creating connectivity variables and constraints.")
     bs, tilde_bs = create_connectivity_variables(model=model,
-                                                 vertex_set=cfg.ind_bg_A_vertices)
+                                                 vertex_set=cfg.ind_bg_A_vertices,
+                                                 suffix="as")
 
     add_certain_connectivity_constraints(model=model,
                                          edges=cfg.ind_bg_A_edges,

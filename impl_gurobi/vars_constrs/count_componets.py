@@ -20,7 +20,7 @@ def create_connectivity_variables(model, vertex_set, suffix):
     logger.info("Creating constraints on tilde connectivity variables.")
     model.addConstrs(v * tilde_connect_vars[v] <= connect_vars[v] for v in vertex_set)
 
-    logger.info("Finished creating connectivity variables.")
+    logger.info("Finishing creating connectivity variables.")
     return connect_vars, tilde_connect_vars
 
 
@@ -46,6 +46,8 @@ def create_representing_variables(model, vertex_set, component_set, component_va
     for k in vertex_set:
         model.addConstr(gurobipy.quicksum(k * dot_vars[k, z] for z in component_set) == component_vars[k])
 
+    return dot_vars
+
 
 def add_ensuring_belonging_constraints(model, vertex_set, representing_vars, belonging_vars, negotiation=False):
     logger.info("Creating constraints to determine vertices in the component or singleton.")
@@ -63,7 +65,8 @@ def add_ensuring_non_zero_constraints(model, dot_vars, component_set, tilde_vars
 def add_ensuring_edge_constraints(model, hat_vars, genome_vars, vertex_set):
     logger.info("Creating constraints that vertex has R-edge.")
     for k in vertex_set:
-        model.addConstr(hat_vars[k] <= gurobipy.quicksum(genome_vars[k, j] for j in vertex_set))
+        model.addConstr(
+            hat_vars[k] <= gurobipy.quicksum(genome_vars[tuple(sorted([k, j]))] for j in vertex_set if k != j))
 
 
 def create_odd_path_variables(model, connect_vars, telomeric_vertices, biggest_const):

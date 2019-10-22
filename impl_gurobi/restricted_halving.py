@@ -3,7 +3,8 @@ import gurobipy
 
 from impl_gurobi.vars_constrs.di_dist import di_dist_without_singletons, ddi_dist_without_singletons
 from impl_gurobi.vars_constrs.ord_matching import define_matching_vars
-from impl_gurobi.common import get_genome_graph_from_vars, ILPAnswer
+from impl_gurobi.common import get_genome_graph_from_vars
+from utils.answer import ILPAnswer
 
 logger = logging.getLogger()
 
@@ -19,13 +20,14 @@ def create_ilp_formulation_for_restricted_halving(cfg):
                                   edge_set=cfg.allowable_ancestral_edges,
                                   edge_conditions=cfg.connection_constrs,
                                   vertex_set=dot_rs,
-                                  vertex_conditions=cfg.allowable_telomers)
+                                  vertex_conditions=cfg.allowable_telomers,
+                                  name="rs")
 
         tilde_b, hat_b = di_dist_without_singletons(model=model, rs=rs, cfg=cfg, ind=0)
         tilde_a, hat_a = ddi_dist_without_singletons(model=model, rs=rs, cfg=cfg)
 
         logger.info("CREATING BIG CONSTRAINT")
-        model.addConstr(tilde_a.sum('*') - hat_a[0].sum('*') - dot_rs.sum('*') ==
+        model.addConstr(tilde_a.sum('*') - hat_a.sum('*') - dot_rs.sum('*') ==
                         len(cfg.ind_ancestral_set) // 2 +
                         cfg.number_of_even_cycles + cfg.number_of_even_paths // 2)
 

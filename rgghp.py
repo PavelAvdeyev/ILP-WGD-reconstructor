@@ -10,7 +10,7 @@ from functools import reduce
 
 import networkx as nx
 
-from impl_gurobi.common import complete_genes_multiset, \
+from utils.set_definer import complete_genes_multiset, \
     observed_edges_from_gene_multiset, vertex_set_from_gene_multiset, define_equiv_function
 from impl_gurobi.restricted_halving import create_ilp_formulation_for_restricted_halving
 from utils.common import epilog, enable_logging, version, get_immediate_subdirectories
@@ -54,8 +54,8 @@ class RestrictedHalvingConf(object):
         self.ind_cbg_A_vertices = {self.cbg_vertex2ind[u] for u in
                                    vertex_set_from_gene_multiset(
                                        complete_genes_multiset(self.genes_of_dupl_genome.keys(), 1))}
-        self.ind_cbg_A_edges = {tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in
-                                cbg_A_matching}
+        self.ind_cbg_A_edges = [tuple(sorted((self.cbg_vertex2ind[u], self.cbg_vertex2ind[v]))) for u, v in
+                                cbg_A_matching]
         self.ind_cbg_A_telomers = {self.cbg_vertex2ind[u] for u in cbg_A_telomers}
 
         self.ms_all_genes = complete_genes_multiset(reduce(operator.or_, self.gene_sets, set()) |
@@ -92,29 +92,28 @@ class RestrictedHalvingConf(object):
         for i in range(self.number_of_genomes):
             if len(self.ind_cbg_p_i_telomers[i]) != 0:
                 flag = True
-        self.allowable_ancestral_telomers = {x: flag for x in self.ind_ancestral_set}
+        self.allowable_telomers = {x: flag for x in self.ind_ancestral_set}
 
         graph = nx.MultiGraph()
         graph.add_nodes_from(self.cbg_vertex2ind.values())
-        for edges in self.ind_cbg_A_edges:
-            for u, v in edges:
-                graph.add_edge(u, v)
+        for edge in self.ind_cbg_A_edges:
+            graph.add_edge(*edge)
 
         self.number_of_even_cycles = 0
         self.number_of_even_paths = 0
         vertex_sets_for_ancestral_edges = []
         meta_vertex_set_for_edges = []
         for component in nx.connected_component_subgraphs(graph):
-            isCycle = True
+            is_cycle = True
 
             for v in component.nodes():
                 if graph.degree(v) != 2:
-                    isCycle = False
+                    is_cycle = False
 
-            if isCycle and len(component.nodes()) % 2 == 0:
+            if is_cycle and len(component.nodes()) % 2 == 0:
                 self.number_of_even_cycles += 1
                 vertex_sets_for_ancestral_edges.append(list(component.nodes()))
-            elif len(component.nodes()) % 2 != 0 and not isCycle:
+            elif len(component.nodes()) % 2 != 0 and not is_cycle:
                 self.number_of_even_paths += 1
                 meta_vertex_set_for_edges.extend(component.nodes())
             else:
@@ -122,10 +121,10 @@ class RestrictedHalvingConf(object):
         vertex_sets_for_ancestral_edges.append(meta_vertex_set_for_edges)
 
         self.allowable_ancestral_edges = set()
-        self.connection_ancestral_constrs = dict()
+        self.connection_constrs = dict()
         for v_set in vertex_sets_for_ancestral_edges:
             self.allowable_ancestral_edges.update({tuple(sorted([u, v])) for u, v in itertools.combinations(v_set, 2)})
-            self.connection_ancestral_constrs.update(
+            self.connection_constrs.update(
                 {u: {tuple(sorted((u, v))) for v in v_set if u != v} for u in v_set})
 
 

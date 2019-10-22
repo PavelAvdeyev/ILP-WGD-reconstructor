@@ -3,7 +3,8 @@ import gurobipy
 
 from impl_gurobi.vars_constrs.di_dist import di_dist_with_singletons, di_dist_without_singletons
 from impl_gurobi.vars_constrs.ord_matching import define_matching_vars
-from impl_gurobi.common import get_genome_graph_from_vars, ILPAnswer
+from impl_gurobi.common import get_genome_graph_from_vars
+from utils.answer import ILPAnswer
 
 logger = logging.getLogger()
 

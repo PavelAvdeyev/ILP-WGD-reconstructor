@@ -8,8 +8,8 @@ import os
 
 from utils.common import epilog, enable_logging, version, get_immediate_subdirectories
 from utils.genome import parse_genome_in_grimm_file
-from impl_gurobi.double_distanse import create_ilp_formulation_for_ddp
-from impl_gurobi.common import remove_singletons_in_ord_wrt_two_dupl, complete_genes_multiset, \
+from impl_gurobi.double_distance import create_ilp_formulation_for_ddp
+from utils.set_definer import complete_genes_multiset, \
     define_equiv_function, vertex_set_from_gene_multiset
 
 logger = logging.getLogger()
