@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 
 import itertools
@@ -14,6 +16,17 @@ logger = logging.getLogger()
 
 
 class HalvingConf(object):
+    """ Base config class for halving problems.
+
+    Config stores information about breakpoint graphs, gene sets, parameters for ILP solver, and so on.
+    It defines the ILP instance.
+
+    Attributes:
+        gene_sets (list[set]): The list of gene sets for each ordinary genome.
+        genes_of_dupl_genome (dict): The multiset of genes that are present in 2-duplicated genome.
+        s_all_genes (dict): The universal set of genes that are present in the input genomes.
+    """
+
     def __init__(self, duplicated_genome, ordinary_genomes, name, log_file, tl, mult=2):
         if len(ordinary_genomes) != 1:
             raise Exception("Incorrect number of genomes for guided halving problems")
@@ -84,6 +97,8 @@ class HalvingConf(object):
 
 
 class ClassicHalving(HalvingConf):
+    """Config class for classical GGHP instance."""
+
     def __init__(self, duplicated_genome, ordinary_genomes, name, log_file, tl, mult=2):
         super().__init__(duplicated_genome, ordinary_genomes, name, log_file, tl, mult)
 
@@ -105,6 +120,8 @@ class ClassicHalving(HalvingConf):
 
 
 class ConservedHalving(HalvingConf):
+    """Config class for conserved the GGHP instance."""
+
     def __init__(self, duplicated_genome, ordinary_genomes, name, log_file, tl, mult=2):
         super().__init__(duplicated_genome, ordinary_genomes, name, log_file, tl, mult)
 
@@ -136,7 +153,9 @@ class ConservedHalving(HalvingConf):
 
 
 def halvings_without_singletons(ordinary_genome_file, all_dupl_genome_file, out_result_file, out_predup_file,
-                                problem, gurobi_log_file, time_limit):
+                                problem, gurobi_log_file, time_limit) -> None:
+    """Creates and calculates the ILP instance for GGHP or CGGHP."""
+
     logging.info('Start to solve {0} (excluding singletons) with time limit equals {1}'.format(problem, time_limit))
 
     ord_genomes = [parse_genome_in_grimm_file(ordinary_genome_file)]

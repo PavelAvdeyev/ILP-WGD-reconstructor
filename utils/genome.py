@@ -1,24 +1,48 @@
+# -*- coding: utf-8 -*-
+""" The description of genome and chromosome objects
+
+This module contains functionality for reading and storing Genome and Chromosome objects.
+"""
+
 from collections import defaultdict
 
 
 class Genome(object):
+    """ Class providing implementation of genome and operations on it.
+
+    Attributes:
+        name (str): The name of the genome.
+        chromosomes (list[Chromosome]): The list of chromosomes in the genome.
+    """
+
     def __init__(self, name=""):
+        """ Initialization of a :class:'Genome' object.
+
+        Args:
+            name (str): The name of the genome.
+        """
+
         self.name = name
         self.chromosomes = []
 
-    def set_name(self, name):
+    def set_name(self, name: str) -> None:
+        """Set the genome name."""
         self.name = name
 
-    def append(self, chromosome):
+    def append(self, chromosome) -> None:
+        """ Add a chromosome to the genome."""
         self.chromosomes.append(chromosome)
 
     def add_chromosome(self, is_circular, chromosome):
+        """ Add a chromosome to the genome by constacting emplace."""
         self.chromosomes.append(Chromosome(is_circular, chromosome))
 
-    def number_of_chromosomes(self):
+    def number_of_chromosomes(self) -> int:
+        """Return the number of chromosomes in the genome."""
         return len(self.chromosomes)
 
     def get_gene_multiset(self):
+        """Get multiset of genes that are present in genome"""
         result = defaultdict(int)
         for chrm in self.chromosomes:
             chrm._get_gene_multiset(result)
@@ -38,6 +62,7 @@ class Genome(object):
         return list_of_edges, list_of_telomers
 
     def get_chromosome(self, ind):
+        """Get a chromosome with specific index"""
         return self.chromosomes[ind]
 
     def get_name(self):
@@ -48,6 +73,13 @@ class Genome(object):
 
 
 class Chromosome(object):
+    """ Class providing implementation of chromosome and operations on it.
+
+        Attributes:
+            is_circ (bool): The indicator of chromosome circularity (True -- circular chromosome).
+            blocks (list[T]): The list of genes/synteny blocks in chromosome.
+    """
+
     def __init__(self, is_circular=False, blocks=None):
         if blocks is None:
             blocks = []

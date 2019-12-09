@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import itertools
 
 from utils.genome import get_extremity_by_gene
@@ -37,16 +39,6 @@ def general_allowable_set(vertex_set):
 
 def general_conditional_set(vertex_set):
     return {u: {tuple(sorted((u, v))) for v in vertex_set if u != v} for u in vertex_set}
-
-
-def conserved_allowable_set(vertex_set, graph, telomers):
-    allowable_edge_set = set()
-    for v in vertex_set:
-        for u1, u2 in graph.edges(v):
-            if u1 in vertex_set and u2 in vertex_set:
-                allowable_edge_set.add(tuple(sorted([u1, u2])))
-    allowable_telomer_set = {v for v in vertex_set if v in telomers}
-    return allowable_edge_set, allowable_telomer_set
 
 
 def define_equiv_function(gene_multiset, vertex2ind, bar_vertex2ind):

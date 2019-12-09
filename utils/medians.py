@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import itertools
 from functools import reduce
@@ -57,6 +59,8 @@ class MedianConf(object):
 
 
 class ClassicMedian(MedianConf):
+    """Config class for classical GMP instance."""
+
     def __init__(self, genomes, name, log_file, tl):
         super().__init__(genomes, name, log_file, tl)
         self.allowable_ancestral_edges = {tuple(sorted([u, v]))
@@ -73,6 +77,8 @@ class ClassicMedian(MedianConf):
 
 
 class ConservedMedian(MedianConf):
+    """Config class for classical CGMP instance."""
+
     def __init__(self, genomes, name, log_file, tl):
         super().__init__(genomes, name, log_file, tl)
 
@@ -115,6 +121,13 @@ def remove_known_singletons(genomes):
 
 
 def medians_with_singletons(genome_files, out_result_file, out_median_file, problem, gurobi_log_file, time_limit):
+    """Creates and calculates the ILP instance for GMP or CGMP with assumption of singleton existance in the
+        ancestral genome.
+
+    Args:
+        TBA
+    """
+
     logging.info('Start to solve {0} (including singletons) with time limit equals {1}'.format(problem, time_limit))
 
     genomes = [parse_genome_in_grimm_file(genome_file) for genome_file in genome_files]
@@ -139,6 +152,13 @@ def medians_with_singletons(genome_files, out_result_file, out_median_file, prob
 
 
 def medians_without_singletons(genome_files, out_result_file, out_median_file, problem, gurobi_log_file, time_limit):
+    """Creates and calculates the ILP instance for GMP or CGMP with assumption of singleton absences in the
+        ancestral genome.
+
+    Args:
+        TBA
+    """
+
     logging.info('Start to solve {0} (excluding singletons) with time limit equals {1}'.format(problem, time_limit))
     genomes = [parse_genome_in_grimm_file(genome_file) for genome_file in genome_files]
     genomes, numb_of_singletons = remove_known_singletons(genomes)

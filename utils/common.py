@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 
 import os
@@ -7,17 +9,25 @@ from utils.genome import Genome
 logger = logging.getLogger()
 
 
-def version():
+def version() -> str:
+    """Returns current version of the tool"""
     return "1.1.0b"
 
 
-def epilog():
+def epilog() -> str:
     return "Gurobi solver is required! Input genomes must be in GRIMM format."
 
 
-def enable_logging(log_file, overwrite):
+def enable_logging(log_file: str, overwrite: bool) -> None:
     """
-    Turns on logging, sets debug levels and assigns a log file
+    Turns on logging, sets debug levels and assigns a log file.
+
+    Args:
+            log_file (str): The path to log file
+            overwrite (bool): The indicator for overwriting existing log file
+
+    Returns:
+         no value
     """
     console_formatter = logging.Formatter("[%(asctime)s] %(levelname)s: "
                                           "%(message)s", "%Y-%m-%d %H:%M:%S")
@@ -39,14 +49,14 @@ def enable_logging(log_file, overwrite):
 
 def get_immediate_subdirectories(a_dir):
     """
-    This function get subdirectories
+    This function gets subdirectories of directory
     """
     return ((os.path.join(a_dir, name), name) for name in os.listdir(a_dir) if os.path.isdir(os.path.join(a_dir, name)))
 
 
 def get_immediate_files(a_dir):
     """
-    This function get files
+    This function gets files in the directory
     """
     return ((os.path.join(a_dir, name), name) for name in os.listdir(a_dir) if
             os.path.isfile(os.path.join(a_dir, name)))
